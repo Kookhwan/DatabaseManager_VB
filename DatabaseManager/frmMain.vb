@@ -18,25 +18,38 @@ Public Class frmMain
             conLocalSQL.Open()
 
             strQuery = ""
-            strQuery = strQuery & "SELECT name "
-            strQuery = strQuery & "FROM   sys.databases "
-            strQuery = strQuery & "WHERE  name LIKE 'ArtwoodsSQL%'"
-            strQuery = strQuery & "ORDER BY create_date ASC "
+            strQuery = strQuery & "SELECT "
+            strQuery = strQuery & "    database_id AS [ID], "
+            strQuery = strQuery & "    name AS [DB Name], "
+            strQuery = strQuery & "    create_date AS [Created DateTime] "
+            strQuery = strQuery & "FROM "
+            strQuery = strQuery & "    sys.databases "
+            strQuery = strQuery & "WHERE "
+            strQuery = strQuery & "    name LIKE 'ArtwoodsSQL%'"
+            strQuery = strQuery & "ORDER BY "
+            strQuery = strQuery & "    create_date ASC "
 
             dgvDatabase.DataSource = gfunDataTableSQL(strQuery, conLocalSQL)
 
             conLocalSQL.Close()
+
+            dgvDatabase.Columns(0).Width = 60
+            dgvDatabase.Columns(0).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvDatabase.Columns(0).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvDatabase.Columns(1).Width = 150
+            dgvDatabase.Columns(1).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft
+            dgvDatabase.Columns(2).Width = 150
+            dgvDatabase.Columns(2).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvDatabase.Columns(2).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
 
         Catch ex As Exception
             MsgBox(ex.Message)
 
         End Try
 
-
-
-
     End Sub
 
-
-
+    Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Call psubLoadDatabase()
+    End Sub
 End Class

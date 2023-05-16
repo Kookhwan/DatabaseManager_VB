@@ -10,3 +10,4 @@ C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\D
 C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.exe
 C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.xml
 C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.pdb
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.vbproj.ResolveComReference.cache
