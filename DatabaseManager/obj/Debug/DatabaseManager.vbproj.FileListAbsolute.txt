@@ -1,0 +1,12 @@
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\bin\Debug\DatabaseManager.exe.config
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\bin\Debug\DatabaseManager.exe
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\bin\Debug\DatabaseManager.pdb
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\bin\Debug\DatabaseManager.xml
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.vbproj.AssemblyReference.cache
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.frmMain.resources
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.Resources.resources
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.vbproj.GenerateResource.cache
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.vbproj.CoreCompileInputs.cache
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.exe
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.xml
+C:\Dev Source\VB.Net\DatabaseManager\DatabaseManager\DatabaseManager\obj\Debug\DatabaseManager.pdb
