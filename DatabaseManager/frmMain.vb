@@ -8,10 +8,10 @@ Imports Microsoft.Office.Interop
 Public Class frmMain
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Call psubLoadDatabase()
+        Call psubGridDatabase()
     End Sub
 
-    Private Sub psubLoadDatabase()
+    Private Sub psubGridDatabase()
 
         Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER\AWTESTZONE17;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
         Dim sqlReader As SqlDataReader = Nothing
@@ -52,5 +52,36 @@ Public Class frmMain
         End Try
 
     End Sub
+
+    Private Sub psubCmbDatabase()
+
+        Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
+        Dim sqlReader As SqlDataReader = Nothing
+        Dim strQuery As String
+
+        Try
+            cmbDatabase.Items.Clear()
+
+            conLocalSQL.Open()
+
+            strQuery = ""
+            strQuery = strQuery & "SELECT name "
+            strQuery = strQuery & "FROM   sys.databases "
+            strQuery = strQuery & "WHERE  name LIKE 'ArtwoodsSQL%'"
+            strQuery = strQuery & "ORDER BY create_date ASC "
+
+            sqlReader = gfunDataReaderSQL(strQuery, conLocalSQL)
+
+
+
+
+        Catch ex As Exception
+            MsgBox(ex.Message)
+
+        End Try
+
+    End Sub
+
+
 
 End Class

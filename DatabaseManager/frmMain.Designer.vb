@@ -28,9 +28,12 @@ Partial Class frmMain
         Me.tabDatabase = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
+        Me.cmbDatabase = New System.Windows.Forms.ComboBox()
+        Me.lblDatabase = New System.Windows.Forms.Label()
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabDatabase.SuspendLayout()
+        Me.TabPage1.SuspendLayout()
         Me.SuspendLayout()
         '
         'dgvDatabase
@@ -76,6 +79,8 @@ Partial Class frmMain
         'TabPage1
         '
         Me.TabPage1.BackColor = System.Drawing.Color.AliceBlue
+        Me.TabPage1.Controls.Add(Me.cmbDatabase)
+        Me.TabPage1.Controls.Add(Me.lblDatabase)
         Me.TabPage1.Location = New System.Drawing.Point(4, 22)
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
@@ -93,6 +98,23 @@ Partial Class frmMain
         Me.TabPage2.TabIndex = 1
         Me.TabPage2.Text = "Exist Backup"
         '
+        'cmbDatabase
+        '
+        Me.cmbDatabase.FormattingEnabled = True
+        Me.cmbDatabase.Location = New System.Drawing.Point(65, 20)
+        Me.cmbDatabase.Name = "cmbDatabase"
+        Me.cmbDatabase.Size = New System.Drawing.Size(260, 21)
+        Me.cmbDatabase.TabIndex = 16
+        '
+        'lblDatabase
+        '
+        Me.lblDatabase.AutoSize = True
+        Me.lblDatabase.Location = New System.Drawing.Point(6, 23)
+        Me.lblDatabase.Name = "lblDatabase"
+        Me.lblDatabase.Size = New System.Drawing.Size(53, 13)
+        Me.lblDatabase.TabIndex = 15
+        Me.lblDatabase.Text = "Database"
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -107,6 +129,8 @@ Partial Class frmMain
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabDatabase.ResumeLayout(False)
+        Me.TabPage1.ResumeLayout(False)
+        Me.TabPage1.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -117,4 +141,6 @@ Partial Class frmMain
     Friend WithEvents tabDatabase As TabControl
     Friend WithEvents TabPage1 As TabPage
     Friend WithEvents TabPage2 As TabPage
+    Friend WithEvents cmbDatabase As ComboBox
+    Friend WithEvents lblDatabase As Label
 End Class
