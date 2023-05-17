@@ -25,38 +25,80 @@ Partial Class frmMain
         Me.dgvDatabase = New System.Windows.Forms.DataGridView()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.DataGridView1 = New System.Windows.Forms.DataGridView()
+        Me.tabDatabase = New System.Windows.Forms.TabControl()
+        Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.TabPage2 = New System.Windows.Forms.TabPage()
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.tabDatabase.SuspendLayout()
         Me.SuspendLayout()
         '
         'dgvDatabase
         '
+        Me.dgvDatabase.AllowUserToAddRows = False
+        Me.dgvDatabase.AllowUserToDeleteRows = False
+        Me.dgvDatabase.AllowUserToOrderColumns = True
+        Me.dgvDatabase.AllowUserToResizeRows = False
         Me.dgvDatabase.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.dgvDatabase.Location = New System.Drawing.Point(3, 210)
+        Me.dgvDatabase.Location = New System.Drawing.Point(12, 200)
+        Me.dgvDatabase.MultiSelect = False
         Me.dgvDatabase.Name = "dgvDatabase"
-        Me.dgvDatabase.Size = New System.Drawing.Size(795, 207)
+        Me.dgvDatabase.ReadOnly = True
+        Me.dgvDatabase.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.dgvDatabase.Size = New System.Drawing.Size(776, 207)
         Me.dgvDatabase.TabIndex = 4
         '
         'ProgressBar1
         '
-        Me.ProgressBar1.Location = New System.Drawing.Point(3, 423)
+        Me.ProgressBar1.Location = New System.Drawing.Point(12, 413)
         Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(795, 25)
+        Me.ProgressBar1.Size = New System.Drawing.Size(776, 25)
         Me.ProgressBar1.TabIndex = 5
         '
         'DataGridView1
         '
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Location = New System.Drawing.Point(488, 12)
+        Me.DataGridView1.Location = New System.Drawing.Point(371, 12)
         Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.Size = New System.Drawing.Size(310, 192)
+        Me.DataGridView1.Size = New System.Drawing.Size(417, 182)
         Me.DataGridView1.TabIndex = 6
+        '
+        'tabDatabase
+        '
+        Me.tabDatabase.Controls.Add(Me.TabPage1)
+        Me.tabDatabase.Controls.Add(Me.TabPage2)
+        Me.tabDatabase.Location = New System.Drawing.Point(12, 12)
+        Me.tabDatabase.Name = "tabDatabase"
+        Me.tabDatabase.SelectedIndex = 0
+        Me.tabDatabase.Size = New System.Drawing.Size(353, 182)
+        Me.tabDatabase.TabIndex = 8
+        '
+        'TabPage1
+        '
+        Me.TabPage1.BackColor = System.Drawing.Color.AliceBlue
+        Me.TabPage1.Location = New System.Drawing.Point(4, 22)
+        Me.TabPage1.Name = "TabPage1"
+        Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage1.Size = New System.Drawing.Size(345, 156)
+        Me.TabPage1.TabIndex = 0
+        Me.TabPage1.Text = "New Backup"
+        '
+        'TabPage2
+        '
+        Me.TabPage2.BackColor = System.Drawing.Color.Lavender
+        Me.TabPage2.Location = New System.Drawing.Point(4, 22)
+        Me.TabPage2.Name = "TabPage2"
+        Me.TabPage2.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage2.Size = New System.Drawing.Size(345, 156)
+        Me.TabPage2.TabIndex = 1
+        Me.TabPage2.Text = "Exist Backup"
         '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.Controls.Add(Me.tabDatabase)
         Me.Controls.Add(Me.DataGridView1)
         Me.Controls.Add(Me.ProgressBar1)
         Me.Controls.Add(Me.dgvDatabase)
@@ -64,6 +106,7 @@ Partial Class frmMain
         Me.Text = "frmMain"
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.tabDatabase.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -71,4 +114,7 @@ Partial Class frmMain
     Friend WithEvents dgvDatabase As DataGridView
     Friend WithEvents ProgressBar1 As ProgressBar
     Friend WithEvents DataGridView1 As DataGridView
+    Friend WithEvents tabDatabase As TabControl
+    Friend WithEvents TabPage1 As TabPage
+    Friend WithEvents TabPage2 As TabPage
 End Class

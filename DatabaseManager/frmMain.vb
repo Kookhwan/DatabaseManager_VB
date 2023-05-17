@@ -7,6 +7,10 @@ Imports Microsoft.Office.Interop
 
 Public Class frmMain
 
+    Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Call psubLoadDatabase()
+    End Sub
+
     Private Sub psubLoadDatabase()
 
         Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER\AWTESTZONE17;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
@@ -49,7 +53,4 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Call psubLoadDatabase()
-    End Sub
 End Class
