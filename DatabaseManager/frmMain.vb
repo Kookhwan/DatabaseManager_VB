@@ -9,7 +9,8 @@ Public Class frmMain
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
         Call psubGridDatabase()
-        Call psubCmbDatabase()
+        Call psubCmbDatabase1()
+        Call psubCmbDatabase2()
     End Sub
 
     Private Sub psubGridDatabase()
@@ -54,14 +55,14 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub psubCmbDatabase()
+    Private Sub psubCmbDatabase1()
 
         Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
         Dim sqlReader As SqlDataReader = Nothing
         Dim strQuery As String
 
         Try
-            cmbDatabase.Items.Clear()
+            cmbDatabase1.Items.Clear()
 
             conLocalSQL.Open()
 
@@ -76,10 +77,10 @@ Public Class frmMain
             If sqlReader IsNot Nothing AndAlso sqlReader.HasRows Then
 
                 While sqlReader.Read
-                    cmbDatabase.Items.Add(sqlReader.GetValue(sqlReader.GetOrdinal("name")))
+                    cmbDatabase1.Items.Add(sqlReader.GetValue(sqlReader.GetOrdinal("name")))
                 End While
 
-                cmbDatabase.Text = "Select database"
+                cmbDatabase1.Text = "Select database"
 
             End If
 
@@ -92,6 +93,39 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub psubCmbDatabase2()
+
+        Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
+        Dim sqlReader As SqlDataReader = Nothing
+        Dim strQuery As String
+
+        Try
+            cmbDatabase2.Items.Clear()
+
+            conLocalSQL.Open()
+
+            strQuery = "EXEC xp_dirtree 'C:\ArtwoodsSQL_Backups', 0, 1"
+
+            sqlReader = gfunDataReaderSQL(strQuery, conLocalSQL)
+
+            If sqlReader IsNot Nothing AndAlso sqlReader.HasRows Then
+
+                While sqlReader.Read
+                    cmbDatabase2.Items.Add(sqlReader.GetValue(sqlReader.GetOrdinal("subdirectory")))
+                End While
+
+                cmbDatabase2.Text = "Select database"
+
+            End If
+
+            conLocalSQL.Close()
+
+        Catch ex As Exception
+            MsgBox(ex.Message)
+
+        End Try
+
+    End Sub
 
 
 End Class
