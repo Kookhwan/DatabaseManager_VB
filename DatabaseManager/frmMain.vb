@@ -9,6 +9,7 @@ Public Class frmMain
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
         Call psubGridDatabase()
+        Call psubCmbDatabase()
     End Sub
 
     Private Sub psubGridDatabase()
@@ -72,8 +73,17 @@ Public Class frmMain
 
             sqlReader = gfunDataReaderSQL(strQuery, conLocalSQL)
 
+            If sqlReader IsNot Nothing AndAlso sqlReader.HasRows Then
 
+                While sqlReader.Read
+                    cmbDatabase.Items.Add(sqlReader.GetValue(sqlReader.GetOrdinal("name")))
+                End While
 
+                cmbDatabase.Text = "Select database"
+
+            End If
+
+            conLocalSQL.Close()
 
         Catch ex As Exception
             MsgBox(ex.Message)
