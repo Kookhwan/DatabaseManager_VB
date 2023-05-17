@@ -7,10 +7,50 @@ Imports Microsoft.Office.Interop
 
 Public Class frmMain
 
+    Private m_dtProgress As New DataTable
+
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Call psubDefineTable()
         Call psubGridDatabase()
         Call psubCmbDatabase1()
         Call psubCmbDatabase2()
+    End Sub
+
+    Private Sub psubDefineTable()
+
+        Try
+
+            dgvProgress.DataSource = Nothing
+
+            m_dtProgress.Columns.Add("No", GetType(Integer))
+            m_dtProgress.Columns.Add("Process Name", GetType(String))
+            m_dtProgress.Columns.Add("Status", GetType(String))           '// Pending, Running, Finished
+
+            m_dtProgress.Rows.Add(1, "Create a new backup for Local", "Pending")
+            m_dtProgress.Rows.Add(2, "Restore Database for Local", "Pending")
+            m_dtProgress.Rows.Add(3, "Log Clear for Local", "Pending")
+            m_dtProgress.Rows.Add(4, "Copy Access DB", "Pending")
+            m_dtProgress.Rows.Add(5, "Relink SQL Talbles", "Pending")
+            m_dtProgress.Rows.Add(6, "Relink SQL Queries", "Pending")
+            m_dtProgress.Rows.Add(7, "Create a new backup for Web", "Pending")
+            m_dtProgress.Rows.Add(8, "Restore Database for Web", "Pending")
+            m_dtProgress.Rows.Add(9, "Log Clear for Web", "Pending")
+
+            dgvProgress.DataSource = m_dtProgress
+
+            dgvProgress.Columns(0).Width = 40
+            dgvProgress.Columns(0).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvProgress.Columns(0).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvProgress.Columns(1).Width = 180
+            dgvProgress.Columns(1).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvProgress.Columns(2).Width = 100
+            dgvProgress.Columns(2).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgvProgress.Columns(2).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+
+        Catch ex As Exception
+            MsgBox(ex.Message & " in psubDefineTable()")
+        End Try
+
     End Sub
 
     Private Sub psubGridDatabase()
@@ -49,7 +89,7 @@ Public Class frmMain
             dgvDatabase.Columns(2).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
 
         Catch ex As Exception
-            MsgBox(ex.Message)
+            MsgBox(ex.Message & " in psubGridDatabase()")
 
         End Try
 
@@ -87,7 +127,7 @@ Public Class frmMain
             conLocalSQL.Close()
 
         Catch ex As Exception
-            MsgBox(ex.Message)
+            MsgBox(ex.Message & " in psubCmbDatabase1()")
 
         End Try
 
@@ -121,8 +161,35 @@ Public Class frmMain
             conLocalSQL.Close()
 
         Catch ex As Exception
-            MsgBox(ex.Message)
+            MsgBox(ex.Message & " in psubCmbDatabase2()")
 
+        End Try
+
+    End Sub
+
+    Private Sub tabDatabase_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tabDatabase.SelectedIndexChanged
+
+        Try
+            If tabDatabase.SelectedIndex = 1 Then
+                m_dtProgress.Rows(0)("Status") = "N/A"
+            Else
+                m_dtProgress.Rows(0)("Status") = "Pending"
+            End If
+
+            dgvProgress.DataSource = m_dtProgress
+
+        Catch ex As Exception
+            MsgBox(ex.Message & " in tabDatabase_SelectedIndexChanged()")
+        End Try
+
+    End Sub
+
+    Private Sub btnCreateBackup1_Click(sender As Object, e As EventArgs) Handles btnCreateBackup1.Click
+
+        Try
+
+        Catch ex As Exception
+            MsgBox(ex.Message & " in btnCreateBackup1_Click()")
         End Try
 
     End Sub
