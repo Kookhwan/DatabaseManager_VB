@@ -29,7 +29,7 @@ Public Class frmMain
             m_dtProgress.Rows.Add(1, "Create a new backup for Local", "Pending")
             m_dtProgress.Rows.Add(2, "Restore Database for Local", "Pending")
             m_dtProgress.Rows.Add(3, "Log Clear for Local", "Pending")
-            m_dtProgress.Rows.Add(4, "Copy Access DB", "Pending")
+            m_dtProgress.Rows.Add(4, "Backup Access DB", "Pending")
             m_dtProgress.Rows.Add(5, "Relink SQL Talbles", "Pending")
             m_dtProgress.Rows.Add(6, "Relink SQL Queries", "Pending")
             m_dtProgress.Rows.Add(7, "Create a new backup for Web", "Pending")
@@ -225,7 +225,11 @@ Public Class frmMain
 
     Private Sub psubSetGridProgress(ByVal nStep As Integer, ByVal strStatus As String)
 
-        m_dtProgress.Rows(nStep)("Status") = strStatus
+        If nStep <= 0 Then
+            Exit Sub
+        End If
+
+        m_dtProgress.Rows(nStep - 1)("Status") = strStatus
 
         dgvProgress.DataSource = m_dtProgress
 
@@ -236,41 +240,56 @@ Public Class frmMain
         Dim strSourceDB As String
         Dim strDate As String
         Dim strTargetDB As String
+
+        Dim strSourceAccess As String
+        Dim strTargetAccess As String
+
         Dim strFilePath As String
         Dim bProcess As Boolean = True
 
-        strSourceDB = cmbDatabase1.SelectedItem
         strDate = Format(Now(), "_M_d")
+        strSourceDB = cmbDatabase1.SelectedItem
         strTargetDB = strSourceDB & strDate
         strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & strTargetDB & ".bak"
 
+        strSourceAccess = "C:\Database\Master.mdb"
+        strTargetAccess = "C:\Database\AWTestZone\Master\Master" & strDate & ".mdb"
+
         '// Create a new backup file from Local Live Database
         If bNewBackup = True Then
-            Call psubSetGridProgress(0, "Running")
+            Call psubSetGridProgress(1, "Running")
             bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
         End If
 
         '// Restore database from the backed up file
         If bProcess = True Then
-            Call psubSetGridProgress(0, "Finished")
-            Call psubSetGridProgress(1, "Running")
-            bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
-        Else
-            Call psubSetGridProgress(0, "Failed")
-            Return False
-        End If
-
-        '// Clear log file
-        If bProcess = True Then
             Call psubSetGridProgress(1, "Finished")
             Call psubSetGridProgress(2, "Running")
-            bProcess = pfunClearLogLocal(strTargetDB)
+            bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
         Else
             Call psubSetGridProgress(1, "Failed")
             Return False
         End If
 
+        '// Clear log file
+        If bProcess = True Then
+            Call psubSetGridProgress(2, "Finished")
+            Call psubSetGridProgress(3, "Running")
+            bProcess = pfunClearLogLocal(strTargetDB)
+        Else
+            Call psubSetGridProgress(2, "Failed")
+            Return False
+        End If
 
+        '// Backup Access DB
+        If bProcess = True Then
+            Call psubSetGridProgress(3, "Finished")
+            Call psubSetGridProgress(4, "Running")
+            bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
+        Else
+            Call psubSetGridProgress(3, "Failed")
+            Return False
+        End If
 
 
 
@@ -382,6 +401,34 @@ Public Class frmMain
         Catch ex As Exception
             bResult = False
             MsgBox(ex.Message & " in pfunClearLogLocal()")
+
+        End Try
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunBackupAccessDB(ByVal strSourceDB As String, ByVal strTargetDB As String) As Boolean
+
+        Dim bResult As Boolean
+
+        Try
+            If System.IO.File.Exists(strSourceDB) Then
+
+                If System.IO.File.Exists(strTargetDB) Then
+                    MsgBox("Delete exist file")
+                    System.IO.File.Delete(strTargetDB)
+                End If
+
+                System.IO.File.Copy(strSourceDB, strTargetDB)
+
+                bResult = True
+
+            End If
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunBackupAccessDB()")
 
         End Try
 
