@@ -34,6 +34,7 @@ Partial Class frmMain
         Me.cmbDatabase2 = New System.Windows.Forms.ComboBox()
         Me.lblDatabase2 = New System.Windows.Forms.Label()
         Me.dgvProgress = New System.Windows.Forms.DataGridView()
+        Me.Button1 = New System.Windows.Forms.Button()
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabDatabase.SuspendLayout()
         Me.TabPage1.SuspendLayout()
@@ -77,6 +78,7 @@ Partial Class frmMain
         'TabPage1
         '
         Me.TabPage1.BackColor = System.Drawing.Color.AliceBlue
+        Me.TabPage1.Controls.Add(Me.Button1)
         Me.TabPage1.Controls.Add(Me.btnCreateBackup1)
         Me.TabPage1.Controls.Add(Me.cmbDatabase1)
         Me.TabPage1.Controls.Add(Me.lblDatabase1)
@@ -172,6 +174,15 @@ Partial Class frmMain
         Me.dgvProgress.Size = New System.Drawing.Size(333, 370)
         Me.dgvProgress.TabIndex = 9
         '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(42, 97)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(99, 42)
+        Me.Button1.TabIndex = 18
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -206,4 +217,5 @@ Partial Class frmMain
     Friend WithEvents lblDatabase2 As Label
     Friend WithEvents btnCreateBackup2 As Button
     Friend WithEvents dgvProgress As DataGridView
+    Friend WithEvents Button1 As Button
 End Class

@@ -290,6 +290,8 @@ Public Class frmMain
             Return False
         End If
 
+        Threading.Thread.Sleep(5000)
+
         '// Re-Link objects into the MS Access
         If bProcess = True Then
             Call psubSetGridProgress(4, "Finished")
@@ -533,5 +535,20 @@ Public Class frmMain
 
     End Function
 
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        Dim strTargetAccess As String
+        Dim strTargetDB As String
+
+        strTargetDB = "ArtwoodsSQL_5_18"
+        strTargetAccess = "N:\AWTestZone\Master\Master_5_18.mdb"
+
+        If pfunRelinkObjects(strTargetDB, strTargetAccess) = True Then
+            MsgBox("Success")
+        Else
+            MsgBox("Fail")
+        End If
+
+    End Sub
 
 End Class
