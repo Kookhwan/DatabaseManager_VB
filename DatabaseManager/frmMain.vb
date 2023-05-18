@@ -41,9 +41,9 @@ Public Class frmMain
             dgvProgress.Columns(0).Width = 40
             dgvProgress.Columns(0).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
             dgvProgress.Columns(0).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-            dgvProgress.Columns(1).Width = 180
+            dgvProgress.Columns(1).Width = 210
             dgvProgress.Columns(1).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
-            dgvProgress.Columns(2).Width = 100
+            dgvProgress.Columns(2).Width = 80
             dgvProgress.Columns(2).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
             dgvProgress.Columns(2).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
 
@@ -186,15 +186,207 @@ Public Class frmMain
 
     Private Sub btnCreateBackup1_Click(sender As Object, e As EventArgs) Handles btnCreateBackup1.Click
 
+        If cmbDatabase1.Text = "Select database" Then
+            MessageBox.Show("Please Select a database", "Warning")
+            Exit Sub
+        End If
+
+        btnCreateBackup1.Enabled = False
+        btnCreateBackup2.Enabled = False
+
         Try
-
-
-
+            If pfunNewBackupDatabase(True) = True Then
+                MsgBox("Test database created successfully.", "Result")
+            Else
+                MsgBox("Backup failed, please Try it again.", "Result")
+            End If
         Catch ex As Exception
-            MsgBox(ex.Message & " in btnCreateBackup1_Click()")
+            MsgBox(ex.Message & " In btnCreateBackup1_Click()")
+        End Try
+
+        btnCreateBackup1.Enabled = True
+        btnCreateBackup2.Enabled = True
+
+    End Sub
+
+    Private Sub btnCreateBackup2_Click(sender As Object, e As EventArgs) Handles btnCreateBackup2.Click
+
+        Try
+            If pfunNewBackupDatabase(False) = True Then
+                MsgBox("Test database created successfully.", "Result")
+            Else
+                MsgBox("Backup failed, please Try it again.", "Result")
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message & " In btnCreateBackup1_Click()")
         End Try
 
     End Sub
 
+    Private Sub psubSetGridProgress(ByVal nStep As Integer, ByVal strStatus As String)
+
+        m_dtProgress.Rows(nStep)("Status") = strStatus
+
+        dgvProgress.DataSource = m_dtProgress
+
+    End Sub
+
+    Private Function pfunNewBackupDatabase(ByVal bNewBackup As Boolean) As Boolean
+
+        Dim strSourceDB As String
+        Dim strDate As String
+        Dim strTargetDB As String
+        Dim strFilePath As String
+        Dim bProcess As Boolean = True
+
+        strSourceDB = cmbDatabase1.SelectedItem
+        strDate = Format(Now(), "_M_d")
+        strTargetDB = strSourceDB & strDate
+        strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & strTargetDB & ".bak"
+
+        '// Create a new backup file from Local Live Database
+        If bNewBackup = True Then
+            Call psubSetGridProgress(0, "Running")
+            bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
+        End If
+
+        '// Restore database from the backed up file
+        If bProcess = True Then
+            Call psubSetGridProgress(0, "Finished")
+            Call psubSetGridProgress(1, "Running")
+            bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
+        Else
+            Call psubSetGridProgress(0, "Failed")
+            Return False
+        End If
+
+        '// Clear log file
+        If bProcess = True Then
+            Call psubSetGridProgress(1, "Finished")
+            Call psubSetGridProgress(2, "Running")
+            bProcess = pfunClearLogLocal(strTargetDB)
+        Else
+            Call psubSetGridProgress(1, "Failed")
+            Return False
+        End If
+
+
+
+
+
+
+
+        Return True
+
+    End Function
+
+    Private Function pfunCreateLocalBackup(ByVal strSourceDB As String, ByVal strFilePath As String) As Boolean
+
+        Dim conLocalSQL As New SqlConnection
+        Dim strQuery As String
+        Dim bResult As Boolean
+
+        Try
+            Call gsubSqlConnectLocal(conLocalSQL, strSourceDB)
+
+            strQuery = ""
+            strQuery = strQuery & "BACKUP Database " & strSourceDB & " "
+            strQuery = strQuery & "To disk = '" & strFilePath & "' "
+            strQuery = strQuery & "WITH FORMAT, "
+            strQuery = strQuery & "    MEDIANAME = '" & strSourceDB & "', "
+            strQuery = strQuery & "    NAME = 'Full Backup of " & strSourceDB & "' "
+
+            bResult = gfunDataWriterSQL(strQuery, conLocalSQL)
+
+            Call gsubSqlDisconnet(conLocalSQL)
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunCreateLocalBackup()")
+        End Try
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunRestoreBackupLocal(ByVal strSourceDB As String, ByVal strTargetDB As String, ByVal strFilePath As String) As Boolean
+
+        Dim conLocalSQL As New SqlConnection
+        Dim strQuery As String
+        Dim strDataFile As String
+        Dim strLogFile As String
+        Dim bResult As Boolean
+
+        strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & strTargetDB & ".mdf"
+        strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & strTargetDB & "_log.ldf"
+
+        Try
+            Call gsubSqlConnectLocal(conLocalSQL, "master", True)
+
+            strQuery = ""
+            strQuery = strQuery & "RESTORE Database " & strTargetDB & " "
+            strQuery = strQuery & "FROM DISK = '" & strFilePath & "' "
+            strQuery = strQuery & "WITH FILE = 1, "
+            strQuery = strQuery & "    MOVE '" & strSourceDB & "' TO '" & strDataFile & "', "
+            strQuery = strQuery & "    MOVE '" & strSourceDB & "_log' TO '" & strLogFile & "', "
+            strQuery = strQuery & "    NOUNLOAD, "
+            strQuery = strQuery & "    STATS = 5 "
+
+            bResult = gfunDataWriterSQL(strQuery, conLocalSQL)
+
+            Call gsubSqlDisconnet(conLocalSQL)
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunRestoreBackupLocal()")
+        End Try
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunClearLogLocal(ByVal strTargetDB As String) As Boolean
+
+        Dim conLocalSQL As New SqlConnection
+        Dim strQuery As String
+        Dim bResult As Boolean
+
+        Try
+            Call gsubSqlConnectLocal(conLocalSQL, strTargetDB, True)
+
+            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY SIMPLE"
+
+            If gfunDataWriterSQL(strQuery, conLocalSQL) = False Then
+                Call gsubSqlDisconnet(conLocalSQL)
+                Return False
+            End If
+
+            strQuery = "DBCC Shrinkfile(ArtwoodsSQL_log, 1)"
+
+            If gfunDataWriterSQL(strQuery, conLocalSQL) = False Then
+                Call gsubSqlDisconnet(conLocalSQL)
+                Return False
+            End If
+
+            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY FULL"
+
+            If gfunDataWriterSQL(strQuery, conLocalSQL) = False Then
+                Call gsubSqlDisconnet(conLocalSQL)
+                Return False
+            End If
+
+            Call gsubSqlDisconnet(conLocalSQL)
+
+            bResult = True
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunClearLogLocal()")
+
+        End Try
+
+        Return bResult
+
+    End Function
 
 End Class
