@@ -30,11 +30,10 @@ Public Class frmMain
             m_dtProgress.Rows.Add(2, "Restore Database for Local", "Pending")
             m_dtProgress.Rows.Add(3, "Log Clear for Local", "Pending")
             m_dtProgress.Rows.Add(4, "Backup Access DB", "Pending")
-            m_dtProgress.Rows.Add(5, "Relink SQL Talbles", "Pending")
-            m_dtProgress.Rows.Add(6, "Relink SQL Queries", "Pending")
-            m_dtProgress.Rows.Add(7, "Create a new backup for Web", "Pending")
-            m_dtProgress.Rows.Add(8, "Restore Database for Web", "Pending")
-            m_dtProgress.Rows.Add(9, "Log Clear for Web", "Pending")
+            m_dtProgress.Rows.Add(5, "ReLink Access Objects", "Pending")
+            m_dtProgress.Rows.Add(6, "Create a new backup for Web", "Pending")
+            m_dtProgress.Rows.Add(7, "Restore Database for Web", "Pending")
+            m_dtProgress.Rows.Add(8, "Log Clear for Web", "Pending")
 
             dgvProgress.DataSource = m_dtProgress
 
@@ -252,8 +251,8 @@ Public Class frmMain
         strTargetDB = strSourceDB & strDate
         strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & strTargetDB & ".bak"
 
-        strSourceAccess = "C:\Database\Master.mdb"
-        strTargetAccess = "C:\Database\AWTestZone\Master\Master" & strDate & ".mdb"
+        strSourceAccess = "N:\Master.mdb"
+        strTargetAccess = "N:\AWTestZone\Master\Master" & strDate & ".mdb"
 
         '// Create a new backup file from Local Live Database
         If bNewBackup = True Then
@@ -291,11 +290,56 @@ Public Class frmMain
             Return False
         End If
 
+        '// Re-Link objects into the MS Access
+        If bProcess = True Then
+            Call psubSetGridProgress(4, "Finished")
+            Call psubSetGridProgress(5, "Running")
+            bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+        Else
+            Call psubSetGridProgress(4, "Failed")
+            Return False
+        End If
 
+        '// Create a new backup for Web
+        If bProcess = True Then
+            Call psubSetGridProgress(5, "Finished")
+            Call psubSetGridProgress(6, "Running")
+            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+            bProcess = True
+        Else
+            Call psubSetGridProgress(5, "Failed")
+            Return False
+        End If
 
+        '// Restore Database for Web
+        If bProcess = True Then
+            Call psubSetGridProgress(6, "Finished")
+            Call psubSetGridProgress(7, "Running")
+            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+            bProcess = True
+        Else
+            Call psubSetGridProgress(6, "Failed")
+            Return False
+        End If
 
+        '// Log Clear for Web
+        If bProcess = True Then
+            Call psubSetGridProgress(7, "Finished")
+            Call psubSetGridProgress(8, "Running")
+            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+            bProcess = True
+        Else
+            Call psubSetGridProgress(7, "Failed")
+            Return False
+        End If
 
-        Return True
+        If bProcess = True Then
+            Call psubSetGridProgress(8, "Finished")
+        Else
+            Call psubSetGridProgress(8, "Failed")
+        End If
+
+        Return bProcess
 
     End Function
 
@@ -435,5 +479,59 @@ Public Class frmMain
         Return bResult
 
     End Function
+
+    Private Function pfunRelinkObjects(ByVal strTargetDB As String, ByVal strTargetAccess As String) As Boolean
+
+        Dim dbs As Access.Dao.Database
+        Dim dbsE As New Access.Dao.DBEngine()
+        Dim bResult As Boolean
+
+        'Connection to the database 
+        dbs = dbsE.OpenDatabase(strTargetAccess)
+
+        Try
+
+            For Each td As Access.Dao.TableDef In dbs.TableDefs
+
+                If Len(td.Connect) > 0 Then
+
+                    If InStr(td.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
+                        td.Connect = "ODBC;DSN=AWTestZone;UID=sa;PWD=&&AW1975&&;Trusted_Connection=No;DATABASE=" & strTargetDB
+                        td.RefreshLink()
+                    ElseIf InStr(td.Connect, "Master-Web") Then
+                        td.Connect = ";DATABASE=N:\AWTestZone\Master\Master-Web.mdb"
+                        td.RefreshLink()
+                    End If
+
+                End If
+
+            Next
+
+            For Each qd As Access.Dao.QueryDef In dbs.QueryDefs
+
+                If Len(qd.Connect) > 0 Then
+
+                    If InStr(qd.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
+                        qd.Connect = "ODBC;DSN=AWTestZone;UID=sa;PWD=&&AW1975&&;Trusted_Connection=No;DATABASE=" & strTargetDB
+                    End If
+
+                End If
+
+            Next
+
+            bResult = True
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunRelinkObjects()")
+
+        End Try
+
+        dbs.Close()
+
+        Return bResult
+
+    End Function
+
 
 End Class
