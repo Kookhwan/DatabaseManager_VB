@@ -10,6 +10,7 @@ Public Class frmMain
     Private m_dtProgress As New DataTable
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Call gsubLoadXML_Info()
         Call psubDefineTable()
         Call psubGridDatabase()
         Call psubCmbDatabase1()

@@ -23,6 +23,8 @@ Module modDatabase
 
         Dim xmlDoc As New XmlDocument()
 
+        xmlDoc.Load("C:\Files\ServerInfo.xml")
+
         gInfo.strAWG_IP = xmlDoc.SelectSingleNode("//System/Environment/AWG_IP").InnerText
         gInfo.strAWG_UID = xmlDoc.SelectSingleNode("//System/Environment/AWG_UID").InnerText
         gInfo.strAWG_PWD = xmlDoc.SelectSingleNode("//System/Environment/AWG_PWD").InnerText
