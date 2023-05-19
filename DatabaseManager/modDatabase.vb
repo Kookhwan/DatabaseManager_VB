@@ -6,6 +6,7 @@ Imports System.Xml
 
 Module modDatabase
 
+    Public gbStart As Boolean
     Public gInfo As ServerInfo
 
     Public Structure ServerInfo

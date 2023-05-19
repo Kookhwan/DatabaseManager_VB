@@ -26,6 +26,7 @@ Partial Class frmMain
         Me.pbProgress = New System.Windows.Forms.ProgressBar()
         Me.tabDatabase = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.Button1 = New System.Windows.Forms.Button()
         Me.btnCreateBackup1 = New System.Windows.Forms.Button()
         Me.cmbDatabase1 = New System.Windows.Forms.ComboBox()
         Me.lblDatabase1 = New System.Windows.Forms.Label()
@@ -34,7 +35,6 @@ Partial Class frmMain
         Me.cmbDatabase2 = New System.Windows.Forms.ComboBox()
         Me.lblDatabase2 = New System.Windows.Forms.Label()
         Me.dgvProgress = New System.Windows.Forms.DataGridView()
-        Me.Button1 = New System.Windows.Forms.Button()
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabDatabase.SuspendLayout()
         Me.TabPage1.SuspendLayout()
@@ -88,6 +88,15 @@ Partial Class frmMain
         Me.TabPage1.Size = New System.Drawing.Size(433, 153)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "By Live Database"
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(42, 97)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(99, 42)
+        Me.Button1.TabIndex = 18
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
         '
         'btnCreateBackup1
         '
@@ -143,16 +152,16 @@ Partial Class frmMain
         '
         Me.cmbDatabase2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cmbDatabase2.FormattingEnabled = True
-        Me.cmbDatabase2.Location = New System.Drawing.Point(83, 20)
+        Me.cmbDatabase2.Location = New System.Drawing.Point(114, 20)
         Me.cmbDatabase2.Name = "cmbDatabase2"
-        Me.cmbDatabase2.Size = New System.Drawing.Size(328, 23)
+        Me.cmbDatabase2.Size = New System.Drawing.Size(297, 23)
         Me.cmbDatabase2.TabIndex = 17
         '
         'lblDatabase2
         '
         Me.lblDatabase2.AutoSize = True
         Me.lblDatabase2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblDatabase2.Location = New System.Drawing.Point(6, 23)
+        Me.lblDatabase2.Location = New System.Drawing.Point(37, 23)
         Me.lblDatabase2.Name = "lblDatabase2"
         Me.lblDatabase2.Size = New System.Drawing.Size(71, 15)
         Me.lblDatabase2.TabIndex = 16
@@ -173,15 +182,6 @@ Partial Class frmMain
         Me.dgvProgress.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.dgvProgress.Size = New System.Drawing.Size(333, 370)
         Me.dgvProgress.TabIndex = 9
-        '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(42, 97)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(99, 42)
-        Me.Button1.TabIndex = 18
-        Me.Button1.Text = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
         '
         'frmMain
         '
