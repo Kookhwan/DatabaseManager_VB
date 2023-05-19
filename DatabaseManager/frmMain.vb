@@ -8,6 +8,7 @@ Imports System.Threading
 
 Public Class frmMain
 
+    Private Const MAX_PROCESS = 8
     Private m_dtProgress As New DataTable
     Private oThread As Thread
 
@@ -208,11 +209,6 @@ Public Class frmMain
 
         Call psubSetWaitCursor(True)
 
-        btnCreateBackup1.Enabled = False
-        btnCreateBackup2.Enabled = False
-
-        'Call psubResetGridProcess()
-
         If gbStart = False Then
 
             Try
@@ -274,9 +270,6 @@ Public Class frmMain
                     Me.Invoke(Sub()
                                   MsgBox("Done")
                                   Call psubSetWaitCursor(False)
-                                  btnCreateBackup1.Enabled = True
-                                  btnCreateBackup2.Enabled = True
-                                  Call psubResetGridProcess()
                               End Sub)
                 End If
 
@@ -317,6 +310,8 @@ Public Class frmMain
 
         dgvProgress.ClearSelection()
         dgvProgress.Rows(nStep - 1).Selected = True
+
+        pbProgress.Value = nStep
 
         Application.DoEvents()
 
@@ -711,6 +706,12 @@ Public Class frmMain
         dgvProgress.Rows(5).Selected = True
 
 
+        pbProgress.Maximum = 8
+        pbProgress.Minimum = 0
+        pbProgress.Value = 5
+
+
+
     End Sub
 
     Private Sub psubSetWaitCursor(ByVal bEnable As Boolean)
@@ -721,6 +722,17 @@ Public Class frmMain
         '    ctrl.UseWaitCursor = bEnable
         '    ctrl = Me.GetNextControl(ctrl, True)
         'Loop
+
+        pbProgress.Maximum = MAX_PROCESS
+
+        If bEnable = True Then
+            pbProgress.Value = 0
+        End If
+
+        btnCreateBackup1.Enabled = Not bEnable
+        btnCreateBackup2.Enabled = Not bEnable
+
+        Call psubResetGridProcess()
 
         Me.UseWaitCursor = bEnable
 
