@@ -55,13 +55,13 @@ Public Class frmMain
 
     Private Sub psubGridDatabase()
 
-        Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER\AWTESTZONE17;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
+        Dim conLocalSQL As New SqlConnection
         Dim sqlReader As SqlDataReader = Nothing
         Dim strQuery As String
 
         Try
 
-            conLocalSQL.Open()
+            Call gsubSqlConnectLocal(conLocalSQL, "master", True)
 
             strQuery = ""
             strQuery = strQuery & "SELECT "
@@ -77,7 +77,7 @@ Public Class frmMain
 
             dgvDatabase.DataSource = gfunDataTableSQL(strQuery, conLocalSQL)
 
-            conLocalSQL.Close()
+            Call gsubSqlDisconnet(conLocalSQL)
 
             dgvDatabase.Columns(0).Width = 60
             dgvDatabase.Columns(0).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter
@@ -97,14 +97,14 @@ Public Class frmMain
 
     Private Sub psubCmbDatabase1()
 
-        Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
+        Dim conLocalSQL As New SqlConnection
         Dim sqlReader As SqlDataReader = Nothing
         Dim strQuery As String
 
         Try
             cmbDatabase1.Items.Clear()
 
-            conLocalSQL.Open()
+            Call gsubSqlConnectLocal(conLocalSQL, "master")
 
             strQuery = ""
             strQuery = strQuery & "SELECT name "
@@ -124,7 +124,7 @@ Public Class frmMain
 
             End If
 
-            conLocalSQL.Close()
+            Call gsubSqlDisconnet(conLocalSQL)
 
         Catch ex As Exception
             MsgBox(ex.Message & " in psubCmbDatabase1()")
@@ -135,14 +135,14 @@ Public Class frmMain
 
     Private Sub psubCmbDatabase2()
 
-        Dim conLocalSQL As New SqlConnection("Data Source=DBSERVER;Persist Security Info=True;User ID=sa;Password=&&AW1975&&")
+        Dim conLocalSQL As New SqlConnection
         Dim sqlReader As SqlDataReader = Nothing
         Dim strQuery As String
 
         Try
             cmbDatabase2.Items.Clear()
 
-            conLocalSQL.Open()
+            Call gsubSqlConnectLocal(conLocalSQL, "master")
 
             strQuery = "EXEC xp_dirtree 'C:\ArtwoodsSQL_Backups', 0, 1"
 
@@ -158,7 +158,7 @@ Public Class frmMain
 
             End If
 
-            conLocalSQL.Close()
+            Call gsubSqlDisconnet(conLocalSQL)
 
         Catch ex As Exception
             MsgBox(ex.Message & " in psubCmbDatabase2()")
@@ -500,7 +500,9 @@ Public Class frmMain
                 If Len(td.Connect) > 0 Then
 
                     If InStr(td.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
-                        td.Connect = "ODBC;DSN=AWTestZone;UID=sa;PWD=&&AW1975&&;Trusted_Connection=No;DATABASE=" & strTargetDB
+                        td.Connect = "ODBC;DSN=AWTestZone;" &
+                                     "UID=" & gInfo.strAWG_UID & ";PWD=" & gInfo.strAWG_PWD & ";" &
+                                     "Trusted_Connection=No;DATABASE=" & strTargetDB
                         td.RefreshLink()
                     ElseIf InStr(td.Connect, "Master-Web") Then
                         td.Connect = ";DATABASE=N:\AWTestZone\Master\Master-Web.mdb"
@@ -516,7 +518,9 @@ Public Class frmMain
                 If Len(qd.Connect) > 0 Then
 
                     If InStr(qd.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
-                        qd.Connect = "ODBC;DSN=AWTestZone;UID=sa;PWD=&&AW1975&&;Trusted_Connection=No;DATABASE=" & strTargetDB
+                        qd.Connect = "ODBC;DSN=AWTestZone;" &
+                                     "UID=" & gInfo.strAWG_UID & ";PWD=" & gInfo.strAWG_PWD & ";" &
+                                     "Trusted_Connection=No;DATABASE=" & strTargetDB
                     End If
 
                 End If

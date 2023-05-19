@@ -6,7 +6,7 @@ Imports System.Xml
 
 Module modDatabase
 
-    Private gInfo As ServerInfo
+    Public gInfo As ServerInfo
 
     Public Structure ServerInfo
 
@@ -78,11 +78,31 @@ Module modDatabase
 
         Dim strConSQL As String
 
-        If bTestZone = True Then
-            strConSQL = "Data Source=DBSERVER\AWTESTZONE17;Initial Catalog=" & strDatabase & ";Persist Security Info=True;User ID=sa;Password=&&AW1975&&"
-        Else
-            strConSQL = "Data Source=DBSERVER;Initial Catalog=" & strDatabase & ";Persist Security Info=True;User ID=sa;Password=&&AW1975&&"
+        strConSQL = "Data Source=" & gInfo.strAWG_IP & IIf(bTestZone, "\AWTESTZONE17;", ";") &
+                    "Initial Catalog=" & strDatabase & ";Persist Security Info=True;" &
+                    "User ID=" & gInfo.strAWG_UID & ";Password=" & gInfo.strAWG_PWD
+
+        dbConnect = New SqlConnection
+
+        dbConnect.ConnectionString = strConSQL
+
+        If dbConnect.State <> ConnectionState.Open Then
+            Try
+                dbConnect.Open()
+            Catch ex As Exception
+                MsgBox(ex.Message & " in gsubSqlConnectLocal()")
+            End Try
         End If
+
+    End Sub
+
+    Public Sub gsubSqlConnectWeb(ByRef dbConnect As SqlConnection, ByVal strDatabase As String)
+
+        Dim strConSQL As String
+
+        strConSQL = "Data Source=" & gInfo.strWEB_IP & ";" &
+                    "Initial Catalog=" & strDatabase & ";Persist Security Info=True;" &
+                    "User ID=" & gInfo.strWEB_UID & ";Password=" & gInfo.strWEB_PWD
 
         dbConnect = New SqlConnection
 
