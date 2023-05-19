@@ -2,8 +2,35 @@
 
 Imports System.Data.OleDb
 Imports System.Data.SqlClient
+Imports System.Xml
 
 Module modDatabase
+
+    Private gInfo As ServerInfo
+
+    Public Structure ServerInfo
+
+        Public strAWG_IP As String
+        Public strAWG_UID As String
+        Public strAWG_PWD As String
+        Public strWEB_IP As String
+        Public strWEB_UID As String
+        Public strWEB_PWD As String
+
+    End Structure
+
+    Public Sub gsubLoadXML_Info()
+
+        Dim xmlDoc As New XmlDocument()
+
+        gInfo.strAWG_IP = xmlDoc.SelectSingleNode("//System/Environment/AWG_IP").InnerText
+        gInfo.strAWG_UID = xmlDoc.SelectSingleNode("//System/Environment/AWG_UID").InnerText
+        gInfo.strAWG_PWD = xmlDoc.SelectSingleNode("//System/Environment/AWG_PWD").InnerText
+        gInfo.strWEB_IP = xmlDoc.SelectSingleNode("//System/Environment/WEB_IP").InnerText
+        gInfo.strWEB_UID = xmlDoc.SelectSingleNode("//System/Environment/WEB_UID").InnerText
+        gInfo.strWEB_PWD = xmlDoc.SelectSingleNode("//System/Environment/WEB_PWD").InnerText
+
+    End Sub
 
     Public Function gfunDataTableSQL(ByVal strSource As String, ByVal oDatabase As SqlConnection) As DataTable
 

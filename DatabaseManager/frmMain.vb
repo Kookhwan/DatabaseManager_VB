@@ -290,6 +290,7 @@ Public Class frmMain
             Return False
         End If
 
+        '// Must wait a moment to access it after backing up the Access DB.
         Threading.Thread.Sleep(5000)
 
         '// Re-Link objects into the MS Access
