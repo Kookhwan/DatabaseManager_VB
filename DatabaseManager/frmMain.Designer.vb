@@ -193,6 +193,7 @@ Partial Class frmMain
         Me.Controls.Add(Me.pbProgress)
         Me.Controls.Add(Me.dgvDatabase)
         Me.Name = "frmMain"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "frmMain"
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabDatabase.ResumeLayout(False)

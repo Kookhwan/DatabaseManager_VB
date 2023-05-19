@@ -42,8 +42,8 @@ Public Class frmMain
             m_dtProgress.Columns.Add("Process Name", GetType(String))
             m_dtProgress.Columns.Add("Status", GetType(String))           '// Pending, Running, Finished
 
-            m_dtProgress.Rows.Add(1, "Backup Access DB", "Pending")
-            m_dtProgress.Rows.Add(2, "Create a new backup for Local", "Pending")
+            m_dtProgress.Rows.Add(1, "Create a new backup for Local", "Pending")
+            m_dtProgress.Rows.Add(2, "Backup Access DB", "Pending")
             m_dtProgress.Rows.Add(3, "Restore Database for Local", "Pending")
             m_dtProgress.Rows.Add(4, "Log Clear for Local", "Pending")
             m_dtProgress.Rows.Add(5, "ReLink Access Objects", "Pending")
@@ -206,8 +206,12 @@ Public Class frmMain
             Exit Sub
         End If
 
+        Call psubSetWaitCursor(True)
+
         btnCreateBackup1.Enabled = False
         btnCreateBackup2.Enabled = False
+
+        'Call psubResetGridProcess()
 
         If gbStart = False Then
 
@@ -217,19 +221,11 @@ Public Class frmMain
                 gbStart = True
                 oThread.Start()
 
-                'If pfunNewBackupDatabase(True) = True Then
-                '    MsgBox("Test database created successfully.", "Result")
-                'Else
-                '    MsgBox("Backup failed, please Try it again.", "Result")
-                'End If
             Catch ex As Exception
                 MsgBox(ex.Message & " In btnCreateBackup1_Click()")
             End Try
 
         End If
-
-        'btnCreateBackup1.Enabled = True
-        'btnCreateBackup2.Enabled = True
 
     End Sub
 
@@ -273,10 +269,19 @@ Public Class frmMain
 
             If nIndex >= 8 Then
                 gbStart = False
+
+                If (Me.InvokeRequired) Then
+                    Me.Invoke(Sub()
+                                  MsgBox("Done")
+                                  Call psubSetWaitCursor(False)
+                                  btnCreateBackup1.Enabled = True
+                                  btnCreateBackup2.Enabled = True
+                                  Call psubResetGridProcess()
+                              End Sub)
+                End If
+
                 oThread.Abort()
 
-                btnCreateBackup1.Enabled = True
-                btnCreateBackup2.Enabled = True
             End If
 
             Thread.Sleep(1000)
@@ -285,6 +290,21 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub psubResetGridProcess(Optional ByVal bRestore As Boolean = False)
+
+        Dim nStep As Integer
+
+        For nStep = 0 To 7
+
+            If nStep = 0 Then
+                m_dtProgress.Rows(nStep)("Status") = IIf(bRestore, "N/A", "Pending")
+            Else
+                m_dtProgress.Rows(nStep)("Status") = "Pending"
+            End If
+
+        Next
+
+    End Sub
     Private Sub psubSetGridProgress(ByVal nStep As Integer, ByVal strStatus As String)
 
         If nStep <= 0 Then
@@ -294,6 +314,9 @@ Public Class frmMain
         m_dtProgress.Rows(nStep - 1)("Status") = strStatus
 
         dgvProgress.DataSource = m_dtProgress
+
+        dgvProgress.ClearSelection()
+        dgvProgress.Rows(nStep - 1).Selected = True
 
         Application.DoEvents()
 
@@ -320,15 +343,20 @@ Public Class frmMain
 
             Select Case nIndex
                 Case 1
-                    bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
+                    'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
+                    bProcess = True
                 Case 2
-                    bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
+                    'bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
+                    bProcess = True
                 Case 3
-                    bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
+                    'bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
+                    bProcess = True
                 Case 4
-                    bProcess = pfunClearLogLocal(strTargetDB)
+                    'bProcess = pfunClearLogLocal(strTargetDB)
+                    bProcess = True
                 Case 5
-                    bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+                    'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+                    bProcess = True
                 Case 6
                     'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
                     bProcess = True
@@ -665,18 +693,38 @@ Public Class frmMain
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
 
-        Dim strTargetAccess As String
-        Dim strTargetDB As String
+        'Dim strTargetAccess As String
+        'Dim strTargetDB As String
 
-        strTargetDB = "ArtwoodsSQL_5_18"
-        strTargetAccess = "N:\AWTestZone\Master\Master_5_18.mdb"
+        'strTargetDB = "ArtwoodsSQL_5_18"
+        'strTargetAccess = "N:\AWTestZone\Master\Master_5_18.mdb"
 
-        If pfunRelinkObjects(strTargetDB, strTargetAccess) = True Then
-            MsgBox("Success")
-        Else
-            MsgBox("Fail")
-        End If
+        'If pfunRelinkObjects(strTargetDB, strTargetAccess) = True Then
+        '    MsgBox("Success")
+        'Else
+        '    MsgBox("Fail")
+        'End If
+
+        'dgvProgress.SelectedRows = 5
+
+        dgvProgress.ClearSelection()
+        dgvProgress.Rows(5).Selected = True
+
+
+    End Sub
+
+    Private Sub psubSetWaitCursor(ByVal bEnable As Boolean)
+
+        'Dim ctrl As Control = Me.GetNextControl(Me, True)
+
+        'Do Until ctrl Is Nothing
+        '    ctrl.UseWaitCursor = bEnable
+        '    ctrl = Me.GetNextControl(ctrl, True)
+        'Loop
+
+        Me.UseWaitCursor = bEnable
 
     End Sub
 
 End Class
+
