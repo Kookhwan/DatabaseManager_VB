@@ -141,4 +141,40 @@ Module modDatabase
 
     End Function
 
+    Public Function gfunIsExistDB(ByVal strSource As String)
+
+        Dim conLocalSQL As New SqlConnection
+        Dim sqlReader As SqlDataReader = Nothing
+        Dim strQuery As String
+        Dim bReturn As Boolean
+
+        Try
+
+            Call gsubSqlConnectLocal(conLocalSQL, "master", True)
+
+            strQuery = ""
+            strQuery = strQuery & "SELECT database_id "
+            strQuery = strQuery & "FROM   sys.databases "
+            strQuery = strQuery & "WHERE  name = '" & strSource & "'"
+
+            sqlReader = gfunDataReaderSQL(strQuery, conLocalSQL)
+
+            If sqlReader IsNot Nothing AndAlso sqlReader.HasRows Then
+
+                bReturn = True
+
+            End If
+
+            Call gsubSqlDisconnet(conLocalSQL)
+
+        Catch ex As Exception
+            bReturn = False
+            MsgBox(ex.Message & " in gfunIsExistDB()")
+
+        End Try
+
+        Return bReturn
+
+    End Function
+
 End Module

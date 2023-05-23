@@ -9,8 +9,16 @@ Imports System.Threading
 Public Class frmMain
 
     Private Const MAX_PROCESS = 8
+
     Private m_dtProgress As New DataTable
     Private oThread As Thread
+    Private nProcess As Integer
+
+    Private m_strDate As String
+    Private m_strSourceDB As String
+    Private m_strTargetDB As String
+
+
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
         Call gsubLoadXML_Info()
@@ -170,7 +178,7 @@ Public Class frmMain
                     cmbDatabase2.Items.Add(sqlReader.GetValue(sqlReader.GetOrdinal("subdirectory")))
                 End While
 
-                cmbDatabase2.Text = "Select database"
+                cmbDatabase2.Text = "Select a backup file"
 
             End If
 
@@ -207,7 +215,19 @@ Public Class frmMain
             Exit Sub
         End If
 
+        m_strDate = Format(Now(), "_M_d")
+        m_strSourceDB = cmbDatabase1.Text
+        m_strTargetDB = m_strSourceDB & m_strDate
+
+        If gfunIsExistDB(m_strTargetDB) Then
+            If MessageBox.Show("There is a same Database. Would you like to overwrite on it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
+                Exit Sub
+            End If
+        End If
+
         Call psubSetWaitCursor(True)
+
+        nProcess = 0
 
         If gbStart = False Then
 
@@ -227,35 +247,60 @@ Public Class frmMain
 
     Private Sub btnCreateBackup2_Click(sender As Object, e As EventArgs) Handles btnCreateBackup2.Click
 
-        Try
-            If pfunNewBackupDatabase(False) = True Then
-                MsgBox("Test database created successfully.", "Result")
-            Else
-                MsgBox("Backup failed, please Try it again.", "Result")
+        Dim dtDate As Date
+
+        If cmbDatabase2.Text = "Select a backup file" Then
+            MessageBox.Show("Please Select a backup file", "Warning")
+            Exit Sub
+        End If
+
+        dtDate = Mid(cmbDatabase2.Text, 19, 10)
+
+        m_strDate = Format(dtDate, "_M_d")
+        m_strSourceDB = Mid(cmbDatabase2.Text, 1, 11)
+        m_strTargetDB = m_strSourceDB & m_strDate
+
+        If gfunIsExistDB(m_strTargetDB) Then
+            If MessageBox.Show("There is a same Database. Would you like to overwrite on it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
+                Exit Sub
             End If
-        Catch ex As Exception
-            MsgBox(ex.Message & " In btnCreateBackup1_Click()")
-        End Try
+        End If
+
+        Call psubSetWaitCursor(True)
+
+        nProcess = 1
+
+        If gbStart = False Then
+
+            Try
+
+                oThread = New Thread(AddressOf psubWorkThread)
+                gbStart = True
+                oThread.Start()
+
+            Catch ex As Exception
+                MsgBox(ex.Message & " In btnCreateBackup2_Click()")
+            End Try
+
+        End If
 
     End Sub
 
     Private Sub psubWorkThread()
 
-        Dim nIndex As Integer = 0
-
         While (gbStart)
 
-            nIndex += 1
+            nProcess += 1
 
             If (Me.InvokeRequired) Then
                 Me.Invoke(Sub()
 
-                              Call psubSetGridProgress(nIndex, "Running")
+                              Call psubSetGridProgress(nProcess, "Running")
 
-                              If pfunBackupProcess(nIndex) = True Then
-                                  Call psubSetGridProgress(nIndex, "Finished")
+                              If pfunBackupProcess(nProcess) = True Then
+                                  Call psubSetGridProgress(nProcess, "Finished")
                               Else
-                                  Call psubSetGridProgress(nIndex, "failed")
+                                  Call psubSetGridProgress(nProcess, "failed")
                                   gbStart = False
                               End If
 
@@ -263,8 +308,7 @@ Public Class frmMain
 
             End If
 
-            If nIndex >= 8 Then
-                gbStart = False
+            If nProcess >= 8 Then
 
                 If (Me.InvokeRequired) Then
                     Me.Invoke(Sub()
@@ -273,6 +317,7 @@ Public Class frmMain
                               End Sub)
                 End If
 
+                gbStart = False
                 oThread.Abort()
 
             End If
@@ -283,14 +328,14 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub psubResetGridProcess(Optional ByVal bRestore As Boolean = False)
+    Private Sub psubResetGridProcess()
 
         Dim nStep As Integer
 
         For nStep = 0 To 7
 
             If nStep = 0 Then
-                m_dtProgress.Rows(nStep)("Status") = IIf(bRestore, "N/A", "Pending")
+                m_dtProgress.Rows(nStep)("Status") = IIf(tabDatabase.SelectedIndex = 1, "N/A", "Pending")
             Else
                 m_dtProgress.Rows(nStep)("Status") = "Pending"
             End If
@@ -319,38 +364,45 @@ Public Class frmMain
 
     Private Function pfunBackupProcess(ByVal nIndex As Integer) As Boolean
 
-        Dim strDate As String
-        Dim strSourceDB As String
-        Dim strTargetDB As String
-        Dim strFilePath As String
+        'Dim strDate As String
+        'Dim strLocSourceDB As String
+        'Dim strLocTargetDB As String
+        Dim strLocFilePath As String
+
+        Dim strWebSourceDB As String
+        Dim strWebTargetDB As String
+        Dim strWebFilePath As String
+
         Dim strSourceAccess As String
         Dim strTargetAccess As String
         Dim bProcess As Boolean
 
         Try
 
-            strDate = Format(Now(), "_M_d")
-            strSourceDB = cmbDatabase1.SelectedItem
-            strTargetDB = strSourceDB & strDate
-            strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & strTargetDB & ".bak"
+            'strDate = Format(Now(), "_M_d")
+            'strLocSourceDB = cmbDatabase1.SelectedItem
+            'strLocTargetDB = strLocSourceDB & strDate
+
+
+            strLocFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
             strSourceAccess = "N:\Master.mdb"
-            strTargetAccess = "N:\AWTestZone\Master\Master" & strDate & ".mdb"
+            strTargetAccess = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
 
             Select Case nIndex
                 Case 1
-                    'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
+                    bProcess = pfunCreateLocalBackup(m_strSourceDB, strLocFilePath)
                     bProcess = True
                 Case 2
-                    'bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
+                    bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
                     bProcess = True
                 Case 3
-                    'bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
+                    bProcess = pfunRestoreBackupLocal(m_strSourceDB, m_strTargetDB, strLocFilePath)
                     bProcess = True
                 Case 4
-                    'bProcess = pfunClearLogLocal(strTargetDB)
+                    bProcess = pfunClearLogLocal(m_strTargetDB)
                     bProcess = True
                 Case 5
-                    'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
+                    bProcess = pfunRelinkObjects(m_strTargetDB, strTargetAccess)
                     bProcess = True
                 Case 6
                     'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
@@ -367,122 +419,6 @@ Public Class frmMain
             bProcess = False
             MsgBox(ex.Message & " in pfunBackupProcess()")
         End Try
-
-        Return bProcess
-
-    End Function
-
-
-
-
-
-    Private Function pfunNewBackupDatabase(ByVal bNewBackup As Boolean) As Boolean
-
-        Dim strDate As String
-        Dim strSourceDB As String
-        Dim strTargetDB As String
-        Dim strFilePath As String
-
-        Dim strSourceAccess As String
-        Dim strTargetAccess As String
-
-        Dim bProcess As Boolean = True
-
-        strDate = Format(Now(), "_M_d")
-        strSourceDB = cmbDatabase1.SelectedItem
-        strTargetDB = strSourceDB & strDate
-        strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & strTargetDB & ".bak"
-
-        strSourceAccess = "N:\Master.mdb"
-        strTargetAccess = "N:\AWTestZone\Master\Master" & strDate & ".mdb"
-
-        '// Create a new backup file from Local Live Database
-        If bNewBackup = True Then
-            Call psubSetGridProgress(1, "Running")
-            bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
-        End If
-
-        '// Restore database from the backed up file
-        If bProcess = True Then
-            Call psubSetGridProgress(1, "Finished")
-            Call psubSetGridProgress(2, "Running")
-            bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
-        Else
-            Call psubSetGridProgress(1, "Failed")
-            Return False
-        End If
-
-        '// Clear log file
-        If bProcess = True Then
-            Call psubSetGridProgress(2, "Finished")
-            Call psubSetGridProgress(3, "Running")
-            bProcess = pfunClearLogLocal(strTargetDB)
-        Else
-            Call psubSetGridProgress(2, "Failed")
-            Return False
-        End If
-
-        '// Backup Access DB
-        If bProcess = True Then
-            Call psubSetGridProgress(3, "Finished")
-            Call psubSetGridProgress(4, "Running")
-            bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
-        Else
-            Call psubSetGridProgress(3, "Failed")
-            Return False
-        End If
-
-        '// Must wait a moment to access it after backing up the Access DB.
-        Threading.Thread.Sleep(5000)
-
-        '// Re-Link objects into the MS Access
-        If bProcess = True Then
-            Call psubSetGridProgress(4, "Finished")
-            Call psubSetGridProgress(5, "Running")
-            bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
-        Else
-            Call psubSetGridProgress(4, "Failed")
-            Return False
-        End If
-
-        '// Create a new backup for Web
-        If bProcess = True Then
-            Call psubSetGridProgress(5, "Finished")
-            Call psubSetGridProgress(6, "Running")
-            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
-            bProcess = True
-        Else
-            Call psubSetGridProgress(5, "Failed")
-            Return False
-        End If
-
-        '// Restore Database for Web
-        If bProcess = True Then
-            Call psubSetGridProgress(6, "Finished")
-            Call psubSetGridProgress(7, "Running")
-            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
-            bProcess = True
-        Else
-            Call psubSetGridProgress(6, "Failed")
-            Return False
-        End If
-
-        '// Log Clear for Web
-        If bProcess = True Then
-            Call psubSetGridProgress(7, "Finished")
-            Call psubSetGridProgress(8, "Running")
-            'bProcess = pfunRelinkObjects(strTargetDB, strTargetAccess)
-            bProcess = True
-        Else
-            Call psubSetGridProgress(7, "Failed")
-            Return False
-        End If
-
-        If bProcess = True Then
-            Call psubSetGridProgress(8, "Finished")
-        Else
-            Call psubSetGridProgress(8, "Failed")
-        End If
 
         Return bProcess
 
@@ -686,6 +622,55 @@ Public Class frmMain
 
     End Function
 
+    Private Function pfunCreateWebBackup(ByVal strSourceDB As String, ByVal strFilePath As String) As Boolean
+
+        Dim conWebSQL As New SqlConnection
+        Dim strQuery As String
+        Dim bResult As Boolean
+
+        Try
+            Call gsubSqlConnectWeb(conWebSQL, strSourceDB)
+
+            strQuery = ""
+            strQuery = strQuery & "BACKUP Database " & strSourceDB & " "
+            strQuery = strQuery & "To disk = '" & strFilePath & "' "
+            strQuery = strQuery & "WITH FORMAT, "
+            strQuery = strQuery & "    MEDIANAME = '" & strSourceDB & "', "
+            strQuery = strQuery & "    NAME = 'Full Backup of " & strSourceDB & "' "
+
+            bResult = gfunDataWriterSQL(strQuery, conWebSQL)
+
+            Call gsubSqlDisconnet(conWebSQL)
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunCreateLocalBackup()")
+        End Try
+
+        Return bResult
+
+    End Function
+
+
+
+
+    Private Sub psubSetWaitCursor(ByVal bEnable As Boolean)
+
+        pbProgress.Maximum = MAX_PROCESS
+
+        If bEnable = True Then
+            pbProgress.Value = 0
+        End If
+
+        btnCreateBackup1.Enabled = Not bEnable
+        btnCreateBackup2.Enabled = Not bEnable
+
+        Call psubResetGridProcess()
+
+        Me.UseWaitCursor = bEnable
+
+    End Sub
+
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
 
         'Dim strTargetAccess As String
@@ -711,30 +696,6 @@ Public Class frmMain
         pbProgress.Value = 5
 
 
-
-    End Sub
-
-    Private Sub psubSetWaitCursor(ByVal bEnable As Boolean)
-
-        'Dim ctrl As Control = Me.GetNextControl(Me, True)
-
-        'Do Until ctrl Is Nothing
-        '    ctrl.UseWaitCursor = bEnable
-        '    ctrl = Me.GetNextControl(ctrl, True)
-        'Loop
-
-        pbProgress.Maximum = MAX_PROCESS
-
-        If bEnable = True Then
-            pbProgress.Value = 0
-        End If
-
-        btnCreateBackup1.Enabled = Not bEnable
-        btnCreateBackup2.Enabled = Not bEnable
-
-        Call psubResetGridProcess()
-
-        Me.UseWaitCursor = bEnable
 
     End Sub
 
