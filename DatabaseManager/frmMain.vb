@@ -15,6 +15,7 @@ Public Class frmMain
     Private nProcess As Integer
 
     Private m_strDate As String
+    Private m_dtTarget As Date
     Private m_strSourceDB As String
     Private m_strTargetDB As String
 
@@ -247,16 +248,14 @@ Public Class frmMain
 
     Private Sub btnCreateBackup2_Click(sender As Object, e As EventArgs) Handles btnCreateBackup2.Click
 
-        Dim dtDate As Date
-
         If cmbDatabase2.Text = "Select a backup file" Then
             MessageBox.Show("Please Select a backup file", "Warning")
             Exit Sub
         End If
 
-        dtDate = Mid(cmbDatabase2.Text, 19, 10)
+        m_dtTarget = Mid(cmbDatabase2.Text, 19, 10)
 
-        m_strDate = Format(dtDate, "_M_d")
+        m_strDate = Format(m_dtTarget, "_M_d")
         m_strSourceDB = Mid(cmbDatabase2.Text, 1, 11)
         m_strTargetDB = m_strSourceDB & m_strDate
 
@@ -390,19 +389,19 @@ Public Class frmMain
 
             Select Case nIndex
                 Case 1
-                    bProcess = pfunCreateLocalBackup(m_strSourceDB, strLocFilePath)
+                    bProcess = pfunCreateLocalBackup()
                     bProcess = True
                 Case 2
-                    bProcess = pfunBackupAccessDB(strSourceAccess, strTargetAccess)
+                    bProcess = pfunBackupAccessDB()
                     bProcess = True
                 Case 3
-                    bProcess = pfunRestoreBackupLocal(m_strSourceDB, m_strTargetDB, strLocFilePath)
+                    bProcess = pfunRestoreBackupLocal()
                     bProcess = True
                 Case 4
-                    bProcess = pfunClearLogLocal(m_strTargetDB)
+                    bProcess = pfunClearLogLocal()
                     bProcess = True
                 Case 5
-                    bProcess = pfunRelinkObjects(m_strTargetDB, strTargetAccess)
+                    bProcess = pfunRelinkObjects()
                     bProcess = True
                 Case 6
                     'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
@@ -424,21 +423,25 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunCreateLocalBackup(ByVal strSourceDB As String, ByVal strFilePath As String) As Boolean
+    Private Function pfunCreateLocalBackup() As Boolean
 
         Dim conLocalSQL As New SqlConnection
         Dim strQuery As String
         Dim bResult As Boolean
+        Dim strFilePath As String
 
         Try
-            Call gsubSqlConnectLocal(conLocalSQL, strSourceDB)
+
+            strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
+
+            Call gsubSqlConnectLocal(conLocalSQL, m_strSourceDB)
 
             strQuery = ""
-            strQuery = strQuery & "BACKUP Database " & strSourceDB & " "
+            strQuery = strQuery & "BACKUP Database " & m_strSourceDB & " "
             strQuery = strQuery & "To disk = '" & strFilePath & "' "
             strQuery = strQuery & "WITH FORMAT, "
-            strQuery = strQuery & "    MEDIANAME = '" & strSourceDB & "', "
-            strQuery = strQuery & "    NAME = 'Full Backup of " & strSourceDB & "' "
+            strQuery = strQuery & "    MEDIANAME = '" & m_strSourceDB & "', "
+            strQuery = strQuery & "    NAME = 'Full Backup of " & m_strSourceDB & "' "
 
             bResult = gfunDataWriterSQL(strQuery, conLocalSQL)
 
@@ -453,26 +456,33 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunRestoreBackupLocal(ByVal strSourceDB As String, ByVal strTargetDB As String, ByVal strFilePath As String) As Boolean
+    Private Function pfunRestoreBackupLocal() As Boolean
 
         Dim conLocalSQL As New SqlConnection
         Dim strQuery As String
+        Dim strFilePath As String
         Dim strDataFile As String
         Dim strLogFile As String
         Dim bResult As Boolean
 
-        strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & strTargetDB & ".mdf"
-        strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & strTargetDB & "_log.ldf"
+        strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & ".mdf"
+        strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & "_log.ldf"
+
+        If InStr(m_strSourceDB, "_") = 0 Then
+            strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
+        Else
+            strFilePath = "C:\ArtwoodsSQL_Backups\" & cmbDatabase2.Text
+        End If
 
         Try
             Call gsubSqlConnectLocal(conLocalSQL, "master", True)
 
             strQuery = ""
-            strQuery = strQuery & "RESTORE Database " & strTargetDB & " "
+            strQuery = strQuery & "RESTORE Database " & m_strTargetDB & " "
             strQuery = strQuery & "FROM DISK = '" & strFilePath & "' "
             strQuery = strQuery & "WITH FILE = 1, "
-            strQuery = strQuery & "    MOVE '" & strSourceDB & "' TO '" & strDataFile & "', "
-            strQuery = strQuery & "    MOVE '" & strSourceDB & "_log' TO '" & strLogFile & "', "
+            strQuery = strQuery & "    MOVE '" & m_strSourceDB & "' TO '" & strDataFile & "', "
+            strQuery = strQuery & "    MOVE '" & m_strSourceDB & "_log' TO '" & strLogFile & "', "
             strQuery = strQuery & "    NOUNLOAD, "
             strQuery = strQuery & "    STATS = 5 "
 
@@ -489,16 +499,16 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunClearLogLocal(ByVal strTargetDB As String) As Boolean
+    Private Function pfunClearLogLocal() As Boolean
 
         Dim conLocalSQL As New SqlConnection
         Dim strQuery As String
         Dim bResult As Boolean
 
         Try
-            Call gsubSqlConnectLocal(conLocalSQL, strTargetDB, True)
+            Call gsubSqlConnectLocal(conLocalSQL, m_strTargetDB, True)
 
-            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY SIMPLE"
+            strQuery = "ALTER Database " & m_strTargetDB & " SET RECOVERY SIMPLE"
 
             If gfunDataWriterSQL(strQuery, conLocalSQL) = False Then
                 Call gsubSqlDisconnet(conLocalSQL)
@@ -512,7 +522,7 @@ Public Class frmMain
                 Return False
             End If
 
-            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY FULL"
+            strQuery = "ALTER Database " & m_strTargetDB & " SET RECOVERY FULL"
 
             If gfunDataWriterSQL(strQuery, conLocalSQL) = False Then
                 Call gsubSqlDisconnet(conLocalSQL)
@@ -533,12 +543,22 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunBackupAccessDB(ByVal strSourceDB As String, ByVal strTargetDB As String) As Boolean
+    Private Function pfunBackupAccessDB() As Boolean
 
         Dim bResult As Boolean
+        Dim strSourceDB As String
+        Dim strTargetDB As String
+
+        If InStr(m_strSourceDB, "_") = 0 Then
+            strSourceDB = "N:\Master.mdb"
+        Else
+            strSourceDB = "D:\Backup." & Format(m_dtTarget, "d") & "\Master.mdb"
+        End If
+
+        strTargetDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
 
         Try
-            If System.IO.File.Exists(strSourceDB) Then
+            If System.IO.File.Exists(strSourceDB) = True Then
 
                 If System.IO.File.Exists(strTargetDB) Then
                     MsgBox("Delete exist file")
@@ -548,6 +568,9 @@ Public Class frmMain
                 System.IO.File.Copy(strSourceDB, strTargetDB)
 
                 bResult = True
+
+            Else
+                MsgBox("Database restore could not be completed because MDB file does not exist.")
 
             End If
 
@@ -561,16 +584,18 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunRelinkObjects(ByVal strTargetDB As String, ByVal strTargetAccess As String) As Boolean
+    Private Function pfunRelinkObjects() As Boolean
 
         Dim dbs As Access.Dao.Database
         Dim dbsE As New Access.Dao.DBEngine()
         Dim bResult As Boolean
+        Dim strTargetAccess As String
 
-        'Connection to the database 
-        dbs = dbsE.OpenDatabase(strTargetAccess)
+        strTargetAccess = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
 
         Try
+            'Connection to the database 
+            dbs = dbsE.OpenDatabase(strTargetAccess)
 
             For Each td As Access.Dao.TableDef In dbs.TableDefs
 
@@ -579,7 +604,7 @@ Public Class frmMain
                     If InStr(td.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
                         td.Connect = "ODBC;DSN=AWTestZone;" &
                                      "UID=" & gInfo.strAWG_UID & ";PWD=" & gInfo.strAWG_PWD & ";" &
-                                     "Trusted_Connection=No;DATABASE=" & strTargetDB
+                                     "Trusted_Connection=No;DATABASE=" & m_strTargetDB
                         td.RefreshLink()
                     ElseIf InStr(td.Connect, "Master-Web") Then
                         td.Connect = ";DATABASE=N:\AWTestZone\Master\Master-Web.mdb"
@@ -599,7 +624,7 @@ Public Class frmMain
                     If InStr(qd.Connect, "DATABASE=ArtwoodsSQL") > 0 Then
                         qd.Connect = "ODBC;DSN=AWTestZone;" &
                                      "UID=" & gInfo.strAWG_UID & ";PWD=" & gInfo.strAWG_PWD & ";" &
-                                     "Trusted_Connection=No;DATABASE=" & strTargetDB
+                                     "Trusted_Connection=No;DATABASE=" & m_strTargetDB
                     End If
 
                 End If
@@ -608,6 +633,8 @@ Public Class frmMain
 
             Next
 
+            dbs.Close()
+
             bResult = True
 
         Catch ex As Exception
@@ -615,8 +642,6 @@ Public Class frmMain
             MsgBox(ex.Message & " in pfunRelinkObjects()")
 
         End Try
-
-        dbs.Close()
 
         Return bResult
 
@@ -650,9 +675,6 @@ Public Class frmMain
         Return bResult
 
     End Function
-
-
-
 
     Private Sub psubSetWaitCursor(ByVal bEnable As Boolean)
 
