@@ -221,7 +221,8 @@ Public Class frmMain
         m_strTargetDB = m_strSourceDB & m_strDate
 
         If gfunIsExistDB(m_strTargetDB) Then
-            If MessageBox.Show("There is a same Database. Would you like to overwrite on it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
+            If MessageBox.Show("There is already a database with the same name." & vbCrLf &
+                               "Would you Like To overwrite On it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
                 Exit Sub
             End If
         End If
@@ -260,7 +261,8 @@ Public Class frmMain
         m_strTargetDB = m_strSourceDB & m_strDate
 
         If gfunIsExistDB(m_strTargetDB) Then
-            If MessageBox.Show("There is a same Database. Would you like to overwrite on it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
+            If MessageBox.Show("There is already a database with the same name." & vbCrLf &
+                               "Would you Like To overwrite On it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
                 Exit Sub
             End If
         End If
@@ -278,7 +280,7 @@ Public Class frmMain
                 oThread.Start()
 
             Catch ex As Exception
-                MsgBox(ex.Message & " In btnCreateBackup2_Click()")
+                MsgBox(ex.Message & " In btnCreateBackup2_Click() Then")
             End Try
 
         End If
@@ -321,7 +323,7 @@ Public Class frmMain
 
             End If
 
-            Thread.Sleep(1000)
+            Thread.Sleep(500)
 
         End While
 
@@ -363,54 +365,34 @@ Public Class frmMain
 
     Private Function pfunBackupProcess(ByVal nIndex As Integer) As Boolean
 
-        'Dim strDate As String
-        'Dim strLocSourceDB As String
-        'Dim strLocTargetDB As String
-        Dim strLocFilePath As String
-
-        Dim strWebSourceDB As String
-        Dim strWebTargetDB As String
-        Dim strWebFilePath As String
-
-        Dim strSourceAccess As String
-        Dim strTargetAccess As String
         Dim bProcess As Boolean
 
         Try
 
-            'strDate = Format(Now(), "_M_d")
-            'strLocSourceDB = cmbDatabase1.SelectedItem
-            'strLocTargetDB = strLocSourceDB & strDate
-
-
-            strLocFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
-            strSourceAccess = "N:\Master.mdb"
-            strTargetAccess = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
-
             Select Case nIndex
                 Case 1
-                    bProcess = pfunCreateLocalBackup()
+                    'bProcess = pfunCreateLocalBackup()
                     bProcess = True
                 Case 2
-                    bProcess = pfunBackupAccessDB()
+                    'bProcess = pfunBackupAccessDB()
                     bProcess = True
                 Case 3
-                    bProcess = pfunRestoreBackupLocal()
+                    'bProcess = pfunRestoreLocalBackup()
                     bProcess = True
                 Case 4
-                    bProcess = pfunClearLogLocal()
+                    'bProcess = pfunClearLogLocal()
                     bProcess = True
                 Case 5
-                    bProcess = pfunRelinkObjects()
+                    'bProcess = pfunRelinkObjects()
                     bProcess = True
                 Case 6
-                    'bProcess = pfunCreateLocalBackup(strSourceDB, strFilePath)
+                    bProcess = pfunCreateWebBackup()
                     bProcess = True
                 Case 7
-                    'bProcess = pfunRestoreBackupLocal(strSourceDB, strTargetDB, strFilePath)
+                    bProcess = pfunRestoreWebBackup()
                     bProcess = True
                 Case 8
-                    'bProcess = pfunClearLogLocal(strTargetDB)
+                    bProcess = pfunClearLogWeb()
                     bProcess = True
             End Select
 
@@ -431,8 +413,11 @@ Public Class frmMain
         Dim strFilePath As String
 
         Try
-
             strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
+
+            If System.IO.File.Exists(strFilePath) Then
+                System.IO.File.Delete(strFilePath)
+            End If
 
             Call gsubSqlConnectLocal(conLocalSQL, m_strSourceDB)
 
@@ -456,7 +441,7 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunRestoreBackupLocal() As Boolean
+    Private Function pfunRestoreLocalBackup() As Boolean
 
         Dim conLocalSQL As New SqlConnection
         Dim strQuery As String
@@ -465,16 +450,16 @@ Public Class frmMain
         Dim strLogFile As String
         Dim bResult As Boolean
 
-        strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & ".mdf"
-        strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & "_log.ldf"
-
-        If InStr(m_strSourceDB, "_") = 0 Then
-            strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
-        Else
-            strFilePath = "C:\ArtwoodsSQL_Backups\" & cmbDatabase2.Text
-        End If
-
         Try
+            strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & ".mdf"
+            strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & "_log.ldf"
+
+            If InStr(m_strSourceDB, "_") = 0 Then
+                strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
+            Else
+                strFilePath = "C:\ArtwoodsSQL_Backups\" & cmbDatabase2.Text
+            End If
+
             Call gsubSqlConnectLocal(conLocalSQL, "master", True)
 
             strQuery = ""
@@ -492,7 +477,7 @@ Public Class frmMain
 
         Catch ex As Exception
             bResult = False
-            MsgBox(ex.Message & " in pfunRestoreBackupLocal()")
+            MsgBox(ex.Message & " in pfunRestoreLocalBackup()")
         End Try
 
         Return bResult
@@ -549,15 +534,15 @@ Public Class frmMain
         Dim strSourceDB As String
         Dim strTargetDB As String
 
-        If InStr(m_strSourceDB, "_") = 0 Then
-            strSourceDB = "N:\Master.mdb"
-        Else
-            strSourceDB = "D:\Backup." & Format(m_dtTarget, "d") & "\Master.mdb"
-        End If
-
-        strTargetDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
-
         Try
+            If InStr(m_strSourceDB, "_") = 0 Then
+                strSourceDB = "N:\Master.mdb"
+            Else
+                strSourceDB = "D:\Backup." & Format(m_dtTarget, "d") & "\Master.mdb"
+            End If
+
+            strTargetDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
+
             If System.IO.File.Exists(strSourceDB) = True Then
 
                 If System.IO.File.Exists(strTargetDB) Then
@@ -591,9 +576,9 @@ Public Class frmMain
         Dim bResult As Boolean
         Dim strTargetAccess As String
 
-        strTargetAccess = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
-
         Try
+            strTargetAccess = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
+
             'Connection to the database 
             dbs = dbsE.OpenDatabase(strTargetAccess)
 
@@ -647,13 +632,23 @@ Public Class frmMain
 
     End Function
 
-    Private Function pfunCreateWebBackup(ByVal strSourceDB As String, ByVal strFilePath As String) As Boolean
+    Private Function pfunCreateWebBackup() As Boolean
 
         Dim conWebSQL As New SqlConnection
         Dim strQuery As String
         Dim bResult As Boolean
 
+        Dim strFilePath As String
+        Dim strSourceDB As String
+
         Try
+            strSourceDB = "artwoods"
+            strFilePath = "C:\Database\AWTestZone" & m_strDate & ".bak"
+
+            If System.IO.File.Exists(strFilePath) Then
+                System.IO.File.Delete(strFilePath)
+            End If
+
             Call gsubSqlConnectWeb(conWebSQL, strSourceDB)
 
             strQuery = ""
@@ -669,7 +664,95 @@ Public Class frmMain
 
         Catch ex As Exception
             bResult = False
-            MsgBox(ex.Message & " in pfunCreateLocalBackup()")
+            MsgBox(ex.Message & " in pfunCreateWebBackup()")
+        End Try
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunRestoreWebBackup() As Boolean
+
+        Dim conWebSQL As New SqlConnection
+        Dim strQuery As String
+        Dim bResult As Boolean
+
+        Dim strFilePath As String
+        Dim strTargetDB As String
+        Dim strDataFile As String
+        Dim strLogFile As String
+
+        Try
+            strTargetDB = "AWTestZone" & m_strDate
+            strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA\" & strTargetDB & ".mdf"
+            strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA\" & strTargetDB & "_log.ldf"
+            strFilePath = "C:\Database\" & strTargetDB & ".bak"
+
+            Call gsubSqlConnectWeb(conWebSQL, "master")
+
+            strQuery = ""
+            strQuery = strQuery & "RESTORE Database " & strTargetDB & " "
+            strQuery = strQuery & "FROM DISK = '" & strFilePath & "' "
+            strQuery = strQuery & "WITH FILE = 1, "
+            strQuery = strQuery & "    MOVE 'artwoods_Data' TO '" & strDataFile & "', "
+            strQuery = strQuery & "    MOVE 'artwoods_Log' TO '" & strLogFile & "', "
+            strQuery = strQuery & "    NOUNLOAD, "
+            strQuery = strQuery & "    STATS = 5 "
+
+            bResult = gfunDataWriterSQL(strQuery, conWebSQL)
+
+            Call gsubSqlDisconnet(conWebSQL)
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunRestoreWebBackup()")
+        End Try
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunClearLogWeb() As Boolean
+
+        Dim conWebSQL As New SqlConnection
+        Dim strQuery As String
+        Dim bResult As Boolean
+        Dim strTargetDB As String
+
+        strTargetDB = "AWTestZone" & m_strDate
+
+        Try
+            Call gsubSqlConnectWeb(conWebSQL, strTargetDB)
+
+            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY SIMPLE"
+
+            If gfunDataWriterSQL(strQuery, conWebSQL) = False Then
+                Call gsubSqlDisconnet(conWebSQL)
+                Return False
+            End If
+
+            strQuery = "DBCC Shrinkfile(artwoods_log, 1)"
+
+            If gfunDataWriterSQL(strQuery, conWebSQL) = False Then
+                Call gsubSqlDisconnet(conWebSQL)
+                Return False
+            End If
+
+            strQuery = "ALTER Database " & strTargetDB & " SET RECOVERY FULL"
+
+            If gfunDataWriterSQL(strQuery, conWebSQL) = False Then
+                Call gsubSqlDisconnet(conWebSQL)
+                Return False
+            End If
+
+            Call gsubSqlDisconnet(conWebSQL)
+
+            bResult = True
+
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in pfunClearLogWeb()")
+
         End Try
 
         Return bResult

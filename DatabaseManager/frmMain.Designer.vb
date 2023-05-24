@@ -35,6 +35,7 @@ Partial Class frmMain
         Me.cmbDatabase2 = New System.Windows.Forms.ComboBox()
         Me.lblDatabase2 = New System.Windows.Forms.Label()
         Me.dgvProgress = New System.Windows.Forms.DataGridView()
+        Me.chkWebSQL = New System.Windows.Forms.CheckBox()
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tabDatabase.SuspendLayout()
         Me.TabPage1.SuspendLayout()
@@ -183,11 +184,25 @@ Partial Class frmMain
         Me.dgvProgress.Size = New System.Drawing.Size(333, 370)
         Me.dgvProgress.TabIndex = 9
         '
+        'chkWebSQL
+        '
+        Me.chkWebSQL.AutoSize = True
+        Me.chkWebSQL.Checked = True
+        Me.chkWebSQL.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkWebSQL.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkWebSQL.Location = New System.Drawing.Point(622, 12)
+        Me.chkWebSQL.Name = "chkWebSQL"
+        Me.chkWebSQL.Size = New System.Drawing.Size(166, 19)
+        Me.chkWebSQL.TabIndex = 20
+        Me.chkWebSQL.Text = "Create a Web Test DB"
+        Me.chkWebSQL.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.Controls.Add(Me.chkWebSQL)
         Me.Controls.Add(Me.dgvProgress)
         Me.Controls.Add(Me.tabDatabase)
         Me.Controls.Add(Me.pbProgress)
@@ -203,6 +218,7 @@ Partial Class frmMain
         Me.TabPage2.PerformLayout()
         CType(Me.dgvProgress, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
 
@@ -219,4 +235,5 @@ Partial Class frmMain
     Friend WithEvents btnCreateBackup2 As Button
     Friend WithEvents dgvProgress As DataGridView
     Friend WithEvents Button1 As Button
+    Friend WithEvents chkWebSQL As CheckBox
 End Class
