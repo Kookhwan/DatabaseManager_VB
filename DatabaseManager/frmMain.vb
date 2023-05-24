@@ -293,6 +293,12 @@ Public Class frmMain
 
             nProcess += 1
 
+            '// If chkWebSQL is unchecked, then skip web process.
+            If chkWebSQL.Checked = False And (nProcess > 4 And nProcess < 8) Then
+                Thread.Sleep(500)
+                Continue While
+            End If
+
             If (Me.InvokeRequired) Then
                 Me.Invoke(Sub()
 
@@ -323,7 +329,7 @@ Public Class frmMain
 
             End If
 
-            Thread.Sleep(500)
+            Thread.Sleep(1000)
 
         End While
 
@@ -337,6 +343,8 @@ Public Class frmMain
 
             If nStep = 0 Then
                 m_dtProgress.Rows(nStep)("Status") = IIf(tabDatabase.SelectedIndex = 1, "N/A", "Pending")
+            ElseIf nStep = 5 Or nStep = 6 Or nStep = 7 Then
+                m_dtProgress.Rows(nStep)("Status") = IIf(chkWebSQL.Checked, "Pending", "N/A")
             Else
                 m_dtProgress.Rows(nStep)("Status") = "Pending"
             End If
@@ -371,19 +379,19 @@ Public Class frmMain
 
             Select Case nIndex
                 Case 1
-                    'bProcess = pfunCreateLocalBackup()
+                    bProcess = pfunCreateLocalBackup()
                     bProcess = True
                 Case 2
-                    'bProcess = pfunBackupAccessDB()
+                    bProcess = pfunBackupAccessDB()
                     bProcess = True
                 Case 3
-                    'bProcess = pfunRestoreLocalBackup()
+                    bProcess = pfunRestoreLocalBackup()
                     bProcess = True
                 Case 4
-                    'bProcess = pfunClearLogLocal()
+                    bProcess = pfunClearLogLocal()
                     bProcess = True
                 Case 5
-                    'bProcess = pfunRelinkObjects()
+                    bProcess = pfunRelinkObjects()
                     bProcess = True
                 Case 6
                     bProcess = pfunCreateWebBackup()
@@ -800,9 +808,12 @@ Public Class frmMain
         pbProgress.Minimum = 0
         pbProgress.Value = 5
 
-
-
     End Sub
+
+    Private Sub chkWebSQL_Click(sender As Object, e As EventArgs) Handles chkWebSQL.Click
+        Call psubResetGridProcess()
+    End Sub
+
 
 End Class
 
