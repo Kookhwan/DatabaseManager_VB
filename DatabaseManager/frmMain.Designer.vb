@@ -209,7 +209,7 @@ Partial Class frmMain
         Me.Controls.Add(Me.dgvDatabase)
         Me.Name = "frmMain"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "frmMain"
+        Me.Text = "Database Manager"
         CType(Me.dgvDatabase, System.ComponentModel.ISupportInitialize).EndInit()
         Me.tabDatabase.ResumeLayout(False)
         Me.TabPage1.ResumeLayout(False)

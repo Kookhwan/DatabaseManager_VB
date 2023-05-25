@@ -19,8 +19,6 @@ Public Class frmMain
     Private m_strSourceDB As String
     Private m_strTargetDB As String
 
-
-
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
         Call gsubLoadXML_Info()
         Call psubDefineTable()
@@ -294,9 +292,13 @@ Public Class frmMain
             nProcess += 1
 
             '// If chkWebSQL is unchecked, then skip web process.
-            If chkWebSQL.Checked = False And (nProcess > 4 And nProcess < 8) Then
+            If chkWebSQL.Checked = False And (nProcess >= 6 And nProcess <= 8) Then
                 Thread.Sleep(500)
                 Continue While
+            End If
+
+            If nProcess = 5 Then
+                Thread.Sleep(5000)
             End If
 
             If (Me.InvokeRequired) Then
@@ -307,7 +309,8 @@ Public Class frmMain
                               If pfunBackupProcess(nProcess) = True Then
                                   Call psubSetGridProgress(nProcess, "Finished")
                               Else
-                                  Call psubSetGridProgress(nProcess, "failed")
+                                  Call psubSetGridProgress(nProcess, "Failed")
+                                  Call psubSetWaitCursor(False)
                                   gbStart = False
                               End If
 
@@ -329,7 +332,7 @@ Public Class frmMain
 
             End If
 
-            Thread.Sleep(1000)
+            Thread.Sleep(500)
 
         End While
 
@@ -358,9 +361,12 @@ Public Class frmMain
             Exit Sub
         End If
 
-        m_dtProgress.Rows(nStep - 1)("Status") = strStatus
+        If m_dtProgress.Rows(nStep - 1)("Status") <> "N/A" Then
 
-        dgvProgress.DataSource = m_dtProgress
+            m_dtProgress.Rows(nStep - 1)("Status") = strStatus
+            dgvProgress.DataSource = m_dtProgress
+
+        End If
 
         dgvProgress.ClearSelection()
         dgvProgress.Rows(nStep - 1).Selected = True
@@ -376,33 +382,30 @@ Public Class frmMain
         Dim bProcess As Boolean
 
         Try
+            If m_dtProgress.Rows(nIndex - 1)("Status") = "N/A" Then
+                bProcess = True
+            Else
 
-            Select Case nIndex
-                Case 1
-                    bProcess = pfunCreateLocalBackup()
-                    bProcess = True
-                Case 2
-                    bProcess = pfunBackupAccessDB()
-                    bProcess = True
-                Case 3
-                    bProcess = pfunRestoreLocalBackup()
-                    bProcess = True
-                Case 4
-                    bProcess = pfunClearLogLocal()
-                    bProcess = True
-                Case 5
-                    bProcess = pfunRelinkObjects()
-                    bProcess = True
-                Case 6
-                    bProcess = pfunCreateWebBackup()
-                    bProcess = True
-                Case 7
-                    bProcess = pfunRestoreWebBackup()
-                    bProcess = True
-                Case 8
-                    bProcess = pfunClearLogWeb()
-                    bProcess = True
-            End Select
+                Select Case nIndex
+                    Case 1
+                        bProcess = pfunCreateLocalBackup()
+                    Case 2
+                        bProcess = pfunBackupAccessDB()
+                    Case 3
+                        bProcess = pfunRestoreLocalBackup()
+                    Case 4
+                        bProcess = pfunClearLogLocal()
+                    Case 5
+                        bProcess = pfunRelinkObjects()
+                    Case 6
+                        bProcess = pfunCreateWebBackup()
+                    Case 7
+                        bProcess = pfunRestoreWebBackup()
+                    Case 8
+                        bProcess = pfunClearLogWeb()
+                End Select
+
+            End If
 
         Catch ex As Exception
             bProcess = False
@@ -462,7 +465,7 @@ Public Class frmMain
             strDataFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & ".mdf"
             strLogFile = "C:\Program Files\Microsoft SQL Server\MSSQL14.AWTESTZONE17\MSSQL\DATA\" & m_strTargetDB & "_log.ldf"
 
-            If InStr(m_strSourceDB, "_") = 0 Then
+            If tabDatabase.SelectedIndex = 0 Then
                 strFilePath = "C:\Database\AWTestZone\SQL_Backup\" & m_strTargetDB & ".bak"
             Else
                 strFilePath = "C:\ArtwoodsSQL_Backups\" & cmbDatabase2.Text
@@ -543,10 +546,10 @@ Public Class frmMain
         Dim strTargetDB As String
 
         Try
-            If InStr(m_strSourceDB, "_") = 0 Then
+            If tabDatabase.SelectedIndex = 0 Then
                 strSourceDB = "N:\Master.mdb"
             Else
-                strSourceDB = "D:\Backup." & Format(m_dtTarget, "d") & "\Master.mdb"
+                strSourceDB = "D:\Backup." & Format(m_dtTarget, "dd") & "\Master.mdb"
             End If
 
             strTargetDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
@@ -554,7 +557,6 @@ Public Class frmMain
             If System.IO.File.Exists(strSourceDB) = True Then
 
                 If System.IO.File.Exists(strTargetDB) Then
-                    MsgBox("Delete exist file")
                     System.IO.File.Delete(strTargetDB)
                 End If
 
