@@ -20,6 +20,13 @@ Public Class frmMain
     Private m_strTargetDB As String
 
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles Me.Load
+
+        If Process.GetProcessesByName("DatabaseManager").Count > 1 Then
+            MessageBox.Show("DatabaseManager is already running", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Close()
+            Exit Sub
+        End If
+
         Call gsubLoadXML_Info()
         Call psubDefineTable()
         Call psubGridDatabase()
@@ -219,10 +226,8 @@ Public Class frmMain
         m_strTargetDB = m_strSourceDB & m_strDate
 
         If gfunIsExistDB(m_strTargetDB) Then
-            If MessageBox.Show("There is already a database with the same name." & vbCrLf &
-                               "Would you Like To overwrite On it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
-                Exit Sub
-            End If
+            MessageBox.Show("There is already a database with the same name.", "Duplicate DB")
+            Exit Sub
         End If
 
         Call psubSetWaitCursor(True)
@@ -259,10 +264,8 @@ Public Class frmMain
         m_strTargetDB = m_strSourceDB & m_strDate
 
         If gfunIsExistDB(m_strTargetDB) Then
-            If MessageBox.Show("There is already a database with the same name." & vbCrLf &
-                               "Would you Like To overwrite On it?", "Duplicate DB", MessageBoxButtons.YesNo) = vbNo Then
-                Exit Sub
-            End If
+            MessageBox.Show("There is already a database with the same name.", "Duplicate DB")
+            Exit Sub
         End If
 
         Call psubSetWaitCursor(True)
@@ -291,14 +294,8 @@ Public Class frmMain
 
             nProcess += 1
 
-            '// If chkWebSQL is unchecked, then skip web process.
-            If chkWebSQL.Checked = False And (nProcess >= 6 And nProcess <= 8) Then
-                Thread.Sleep(500)
-                Continue While
-            End If
-
             If nProcess = 5 Then
-                Thread.Sleep(5000)
+                Thread.Sleep(5000)  '// Delay for getting permission from Access DB
             End If
 
             If (Me.InvokeRequired) Then
@@ -323,7 +320,9 @@ Public Class frmMain
                 If (Me.InvokeRequired) Then
                     Me.Invoke(Sub()
                                   MsgBox("Done")
+                                  Call psubGridDatabase()
                                   Call psubSetWaitCursor(False)
+                                  tabDatabase.Enabled = True
                               End Sub)
                 End If
 
@@ -365,7 +364,6 @@ Public Class frmMain
 
             m_dtProgress.Rows(nStep - 1)("Status") = strStatus
             dgvProgress.DataSource = m_dtProgress
-
         End If
 
         dgvProgress.ClearSelection()
@@ -549,7 +547,8 @@ Public Class frmMain
             If tabDatabase.SelectedIndex = 0 Then
                 strSourceDB = "N:\Master.mdb"
             Else
-                strSourceDB = "D:\Backup." & Format(m_dtTarget, "dd") & "\Master.mdb"
+                'strSourceDB = "D:\Backup." & Format(m_dtTarget, "dd") & "\Master.mdb"
+                strSourceDB = "\\dbserver\DB_Backup\Backup." & Format(m_dtTarget, "dd") & "\Master.mdb"
             End If
 
             strTargetDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"
@@ -777,8 +776,7 @@ Public Class frmMain
             pbProgress.Value = 0
         End If
 
-        btnCreateBackup1.Enabled = Not bEnable
-        btnCreateBackup2.Enabled = Not bEnable
+        tabDatabase.Enabled = Not bEnable
 
         Call psubResetGridProcess()
 
@@ -786,36 +784,9 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-
-        'Dim strTargetAccess As String
-        'Dim strTargetDB As String
-
-        'strTargetDB = "ArtwoodsSQL_5_18"
-        'strTargetAccess = "N:\AWTestZone\Master\Master_5_18.mdb"
-
-        'If pfunRelinkObjects(strTargetDB, strTargetAccess) = True Then
-        '    MsgBox("Success")
-        'Else
-        '    MsgBox("Fail")
-        'End If
-
-        'dgvProgress.SelectedRows = 5
-
-        dgvProgress.ClearSelection()
-        dgvProgress.Rows(5).Selected = True
-
-
-        pbProgress.Maximum = 8
-        pbProgress.Minimum = 0
-        pbProgress.Value = 5
-
-    End Sub
-
     Private Sub chkWebSQL_Click(sender As Object, e As EventArgs) Handles chkWebSQL.Click
         Call psubResetGridProcess()
     End Sub
-
 
 End Class
 

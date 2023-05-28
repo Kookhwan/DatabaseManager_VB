@@ -22,11 +22,11 @@ Partial Class frmMain
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
         Me.dgvDatabase = New System.Windows.Forms.DataGridView()
         Me.pbProgress = New System.Windows.Forms.ProgressBar()
         Me.tabDatabase = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
-        Me.Button1 = New System.Windows.Forms.Button()
         Me.btnCreateBackup1 = New System.Windows.Forms.Button()
         Me.cmbDatabase1 = New System.Windows.Forms.ComboBox()
         Me.lblDatabase1 = New System.Windows.Forms.Label()
@@ -79,7 +79,6 @@ Partial Class frmMain
         'TabPage1
         '
         Me.TabPage1.BackColor = System.Drawing.Color.AliceBlue
-        Me.TabPage1.Controls.Add(Me.Button1)
         Me.TabPage1.Controls.Add(Me.btnCreateBackup1)
         Me.TabPage1.Controls.Add(Me.cmbDatabase1)
         Me.TabPage1.Controls.Add(Me.lblDatabase1)
@@ -89,15 +88,6 @@ Partial Class frmMain
         Me.TabPage1.Size = New System.Drawing.Size(433, 153)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "By Live Database"
-        '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(42, 97)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(99, 42)
-        Me.Button1.TabIndex = 18
-        Me.Button1.Text = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
         '
         'btnCreateBackup1
         '
@@ -207,6 +197,8 @@ Partial Class frmMain
         Me.Controls.Add(Me.tabDatabase)
         Me.Controls.Add(Me.pbProgress)
         Me.Controls.Add(Me.dgvDatabase)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "frmMain"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Database Manager"
@@ -234,6 +226,5 @@ Partial Class frmMain
     Friend WithEvents lblDatabase2 As Label
     Friend WithEvents btnCreateBackup2 As Button
     Friend WithEvents dgvProgress As DataGridView
-    Friend WithEvents Button1 As Button
     Friend WithEvents chkWebSQL As CheckBox
 End Class
