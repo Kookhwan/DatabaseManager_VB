@@ -8,7 +8,7 @@ Imports System.Threading
 
 Public Class frmMain
 
-    Private Const MAX_PROCESS = 8
+    Private Const MAX_PROCESS = 9
 
     Private m_dtProgress As New DataTable
     Private oThread As Thread
@@ -57,14 +57,20 @@ Public Class frmMain
             m_dtProgress.Columns.Add("Process Name", GetType(String))
             m_dtProgress.Columns.Add("Status", GetType(String))           '// Pending, Running, Finished
 
-            m_dtProgress.Rows.Add(1, "Create a new backup for Local", "Pending")
-            m_dtProgress.Rows.Add(2, "Backup Access DB", "Pending")
-            m_dtProgress.Rows.Add(3, "Restore Database for Local", "Pending")
-            m_dtProgress.Rows.Add(4, "Log Clear for Local", "Pending")
-            m_dtProgress.Rows.Add(5, "ReLink Access Objects", "Pending")
-            m_dtProgress.Rows.Add(6, "Create a new backup for Web", "Pending")
-            m_dtProgress.Rows.Add(7, "Restore Database for Web", "Pending")
-            m_dtProgress.Rows.Add(8, "Log Clear for Web", "Pending")
+            m_dtProgress.Rows.Add(1, "Create a new backup for Local_SQL", "Pending")
+            m_dtProgress.Rows.Add(2, "Restore Database for Local_SQL", "Pending")
+            m_dtProgress.Rows.Add(3, "Log Clear for Local_SQL", "Pending")
+
+            m_dtProgress.Rows.Add(4, "Backup Access DB", "Pending")
+            m_dtProgress.Rows.Add(5, "Compact Access DB", "Pending")
+            m_dtProgress.Rows.Add(6, "ReLink Access Objects", "Pending")
+
+            m_dtProgress.Rows.Add(7, "Create a new backup for Web_SQL", "Pending")
+            m_dtProgress.Rows.Add(8, "Restore Database for Web_SQL", "Pending")
+            m_dtProgress.Rows.Add(9, "Log Clear for Web_SQL", "Pending")
+
+
+
 
             dgvProgress.DataSource = m_dtProgress
 
@@ -260,7 +266,8 @@ Public Class frmMain
         m_dtTarget = Mid(cmbDatabase2.Text, 19, 10)
 
         m_strDate = Format(m_dtTarget, "_M_d")
-        m_strSourceDB = Mid(cmbDatabase2.Text, 1, 11)
+        'm_strSourceDB = Mid(cmbDatabase2.Text, 1, 11)
+        m_strSourceDB = "ArtwoodsSQL"
         m_strTargetDB = m_strSourceDB & m_strDate
 
         If gfunIsExistDB(m_strTargetDB) Then
@@ -294,10 +301,6 @@ Public Class frmMain
 
             nProcess += 1
 
-            If nProcess = 5 Then
-                Thread.Sleep(5000)  '// Delay for getting permission from Access DB
-            End If
-
             If (Me.InvokeRequired) Then
                 Me.Invoke(Sub()
 
@@ -315,7 +318,7 @@ Public Class frmMain
 
             End If
 
-            If nProcess >= 8 Then
+            If nProcess >= 9 Then   '// Last Step = 9
 
                 If (Me.InvokeRequired) Then
                     Me.Invoke(Sub()
@@ -341,11 +344,11 @@ Public Class frmMain
 
         Dim nStep As Integer
 
-        For nStep = 0 To 7
+        For nStep = 0 To 8
 
             If nStep = 0 Then
                 m_dtProgress.Rows(nStep)("Status") = IIf(tabDatabase.SelectedIndex = 1, "N/A", "Pending")
-            ElseIf nStep = 5 Or nStep = 6 Or nStep = 7 Then
+            ElseIf nStep = 6 Or nStep = 7 Or nStep = 8 Then
                 m_dtProgress.Rows(nStep)("Status") = IIf(chkWebSQL.Checked, "Pending", "N/A")
             Else
                 m_dtProgress.Rows(nStep)("Status") = "Pending"
@@ -385,22 +388,28 @@ Public Class frmMain
             Else
 
                 Select Case nIndex
+                        '// Local SQL
                     Case 1
                         bProcess = pfunCreateLocalBackup()
                     Case 2
-                        bProcess = pfunBackupAccessDB()
-                    Case 3
                         bProcess = pfunRestoreLocalBackup()
-                    Case 4
+                    Case 3
                         bProcess = pfunClearLogLocal()
+                        '// For Access DB
+                    Case 4
+                        bProcess = pfunBackupAccessDB()
                     Case 5
-                        bProcess = pfunRelinkObjects()
+                        bProcess = pfunCompactAccessDB()
                     Case 6
-                        bProcess = pfunCreateWebBackup()
+                        bProcess = pfunRelinkObjects()
+                        '// For Web SQL
                     Case 7
-                        bProcess = pfunRestoreWebBackup()
+                        bProcess = pfunCreateWebBackup()
                     Case 8
+                        bProcess = pfunRestoreWebBackup()
+                    Case 9
                         bProcess = pfunClearLogWeb()
+
                 End Select
 
             End If
@@ -574,6 +583,47 @@ Public Class frmMain
 
         End Try
 
+        Thread.Sleep(4000)
+
+        Return bResult
+
+    End Function
+
+    Private Function pfunCompactAccessDB() As Boolean
+
+        Dim bResult As Boolean
+        Dim strSourceDB As String
+        Dim strCompactDB As String
+
+        strSourceDB = "N:\AWTestZone\Master\Master" & m_strDate & ".mdb"            '// Original file path
+        strCompactDB = "N:\AWTestZone\Master\Master" & m_strDate & "_Compact.mdb"   '// Compact file path
+
+        Try
+            '// Check the file to compact exist or not
+            If File.Exists(strSourceDB) Then
+
+                Dim dbsE As New Access.Dao.DBEngine()
+
+                Thread.Sleep(2000)
+
+                '// CompactDatabase has two parameters, creates a copy of compact DB at the Destination path
+                dbsE.CompactDatabase(strSourceDB, strCompactDB)
+            End If
+
+            'restore the original file from the compacted file
+            If File.Exists(strCompactDB) Then
+                File.Delete(strSourceDB)
+                File.Move(strCompactDB, strSourceDB)
+            End If
+
+            bResult = True
+        Catch ex As Exception
+            bResult = False
+            MsgBox(ex.Message & " in psubCompactAccessDB()")
+        End Try
+
+        Thread.Sleep(1000)
+
         Return bResult
 
     End Function
@@ -590,6 +640,8 @@ Public Class frmMain
 
             'Connection to the database 
             dbs = dbsE.OpenDatabase(strTargetAccess)
+
+            Thread.Sleep(2000)
 
             For Each td As Access.Dao.TableDef In dbs.TableDefs
 
@@ -786,6 +838,20 @@ Public Class frmMain
 
     Private Sub chkWebSQL_Click(sender As Object, e As EventArgs) Handles chkWebSQL.Click
         Call psubResetGridProcess()
+    End Sub
+
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        m_dtTarget = Mid(cmbDatabase2.Text, 19, 10)
+
+        m_strDate = Format(m_dtTarget, "_M_d")
+        m_strSourceDB = "ArtwoodsSQL"
+        m_strTargetDB = m_strSourceDB & m_strDate
+
+        'Call pfunRelinkObjects()
+        'Call pfunCompactAccessDB()
+
     End Sub
 
 End Class
